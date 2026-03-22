@@ -7,54 +7,94 @@ import Mindmap from './components/Mindmap';
 import ExamHacks from './components/ExamHacks';
 import MockTest from './components/MockTest';
 import AuthModal from './components/AuthModal';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck } from 'lucide-react';
 
 interface User {
   name: string;
   email: string;
 }
 
+type Tab = 'vocab' | 'flashcards' | 'mindmap' | 'examhacks' | 'mocktest';
+
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
+  { id: 'vocab',      label: 'Vocab',      icon: BookOpen },
+  { id: 'flashcards', label: 'Flashcards', icon: GraduationCap },
+  { id: 'mindmap',    label: 'Mindmap',    icon: Map },
+  { id: 'examhacks',  label: 'Exam Hacks', icon: Zap },
+  { id: 'mocktest',   label: 'Mock Test',  icon: ClipboardCheck },
+];
+
 export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('vocab');
 
   const handleAuthSuccess = (userData: User) => {
     setUser(userData);
     setShowAuthModal(false);
-    setTimeout(() => {
-      document.getElementById('vocab')?.scrollIntoView({ behavior: 'smooth' });
-    }, 300);
+    setActiveTab('vocab');
   };
 
   return (
     <div className="min-h-screen bg-matte-black selection:bg-metallic-gold/30">
       <Navbar user={user} onSignIn={() => setShowAuthModal(true)} onSignOut={() => setUser(null)} />
 
-      <motion.main
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: 'easeOut' }}
-      >
+      <main className="pt-20">
         {user ? (
-          /* ✅ Logged in — show only learning components, no Hero */
           <>
-            <VocabularyList />
-            <Flashcards />
-            <Mindmap />
-            <ExamHacks />
-            <MockTest />
+            {/* Tab Bar */}
+            <div className="sticky top-20 z-40 bg-matte-black/90 backdrop-blur-md border-b border-metallic-gold/10">
+              <div className="max-w-7xl mx-auto px-4">
+                <div className="flex overflow-x-auto scrollbar-hide gap-1 py-2">
+                  {TABS.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${
+                          isActive
+                            ? 'bg-metallic-gold text-matte-black shadow-lg shadow-metallic-gold/20'
+                            : 'text-gray-400 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <Icon size={15} />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.25 }}
+              >
+                {activeTab === 'vocab'      && <VocabularyList />}
+                {activeTab === 'flashcards' && <Flashcards />}
+                {activeTab === 'mindmap'    && <Mindmap />}
+                {activeTab === 'examhacks'  && <ExamHacks />}
+                {activeTab === 'mocktest'   && <MockTest />}
+              </motion.div>
+            </AnimatePresence>
           </>
         ) : (
-          /* 🔒 Not logged in — show Hero + locked section */
           <>
+            {/* Not logged in — Hero + locked */}
             <Hero onStartLearning={() => setShowAuthModal(true)} />
             <div className="py-32 flex flex-col items-center justify-center text-center px-4 border-t border-metallic-gold/10">
               <div className="w-20 h-20 rounded-full bg-metallic-gold/10 border border-metallic-gold/30 flex items-center justify-center mb-6">
                 <span className="text-4xl">🔒</span>
               </div>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Members Only Content
-              </h2>
+              <h2 className="text-3xl font-bold text-white mb-4">Members Only Content</h2>
               <p className="text-gray-400 max-w-md mb-8 leading-relaxed">
                 Sign up or sign in to access Vocabulary, Flashcards, Mindmaps, Exam Hacks, and Mock Tests.
               </p>
@@ -69,7 +109,7 @@ export default function App() {
             </div>
           </>
         )}
-      </motion.main>
+      </main>
 
       <footer className="py-10 border-t border-metallic-gold/10 text-center text-gray-500 text-sm">
         <p>&copy; {new Date().getFullYear()} Kaigo Strategist Academy. All rights reserved.</p>
