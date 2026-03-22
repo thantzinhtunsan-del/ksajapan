@@ -35,11 +35,8 @@ export default function App() {
         animate={{ opacity: 1 }}
         transition={{ duration: 1.2, ease: 'easeOut' }}
       >
-        {/* Always visible */}
-        <Hero onStartLearning={() => setShowAuthModal(true)} />
-
-        {/* Show content only after sign in */}
         {user ? (
+          /* ✅ Logged in — show only learning components, no Hero */
           <>
             <VocabularyList />
             <Flashcards />
@@ -48,25 +45,29 @@ export default function App() {
             <MockTest />
           </>
         ) : (
-          <div className="py-32 flex flex-col items-center justify-center text-center px-4 border-t border-metallic-gold/10">
-            <div className="w-20 h-20 rounded-full bg-metallic-gold/10 border border-metallic-gold/30 flex items-center justify-center mb-6">
-              <span className="text-4xl">🔒</span>
+          /* 🔒 Not logged in — show Hero + locked section */
+          <>
+            <Hero onStartLearning={() => setShowAuthModal(true)} />
+            <div className="py-32 flex flex-col items-center justify-center text-center px-4 border-t border-metallic-gold/10">
+              <div className="w-20 h-20 rounded-full bg-metallic-gold/10 border border-metallic-gold/30 flex items-center justify-center mb-6">
+                <span className="text-4xl">🔒</span>
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Members Only Content
+              </h2>
+              <p className="text-gray-400 max-w-md mb-8 leading-relaxed">
+                Sign up or sign in to access Vocabulary, Flashcards, Mindmaps, Exam Hacks, and Mock Tests.
+              </p>
+              <motion.button
+                onClick={() => setShowAuthModal(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="gold-button"
+              >
+                Sign Up / Sign In
+              </motion.button>
             </div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Members Only Content
-            </h2>
-            <p className="text-gray-400 max-w-md mb-8 leading-relaxed">
-              Sign up or sign in to access Vocabulary, Flashcards, Mindmaps, Exam Hacks, and Mock Tests.
-            </p>
-            <motion.button
-              onClick={() => setShowAuthModal(true)}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="gold-button"
-            >
-              Sign Up / Sign In
-            </motion.button>
-          </div>
+          </>
         )}
       </motion.main>
 
