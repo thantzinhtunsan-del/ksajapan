@@ -1,8 +1,3 @@
-/**
- * App.tsx — updated
- * Manages global auth state + AuthModal.
- */
-
 import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -26,7 +21,6 @@ export default function App() {
   const handleAuthSuccess = (userData: User) => {
     setUser(userData);
     setShowAuthModal(false);
-    // Scroll to vocab section after login
     setTimeout(() => {
       document.getElementById('vocab')?.scrollIntoView({ behavior: 'smooth' });
     }, 300);
@@ -39,21 +33,47 @@ export default function App() {
       <motion.main
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.2, ease: "easeOut" }}
+        transition={{ duration: 1.2, ease: 'easeOut' }}
       >
+        {/* Always visible */}
         <Hero onStartLearning={() => setShowAuthModal(true)} />
-        <VocabularyList />
-        <Flashcards />
-        <Mindmap />
-        <ExamHacks />
-        <MockTest />
+
+        {/* Show content only after sign in */}
+        {user ? (
+          <>
+            <VocabularyList />
+            <Flashcards />
+            <Mindmap />
+            <ExamHacks />
+            <MockTest />
+          </>
+        ) : (
+          <div className="py-32 flex flex-col items-center justify-center text-center px-4 border-t border-metallic-gold/10">
+            <div className="w-20 h-20 rounded-full bg-metallic-gold/10 border border-metallic-gold/30 flex items-center justify-center mb-6">
+              <span className="text-4xl">🔒</span>
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Members Only Content
+            </h2>
+            <p className="text-gray-400 max-w-md mb-8 leading-relaxed">
+              Sign up or sign in to access Vocabulary, Flashcards, Mindmaps, Exam Hacks, and Mock Tests.
+            </p>
+            <motion.button
+              onClick={() => setShowAuthModal(true)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="gold-button"
+            >
+              Sign Up / Sign In
+            </motion.button>
+          </div>
+        )}
       </motion.main>
 
       <footer className="py-10 border-t border-metallic-gold/10 text-center text-gray-500 text-sm">
         <p>&copy; {new Date().getFullYear()} Kaigo Strategist Academy. All rights reserved.</p>
       </footer>
 
-      {/* Auth Modal */}
       <AuthModal
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
