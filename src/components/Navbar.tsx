@@ -1,8 +1,19 @@
+/**
+ * Navbar.tsx — updated
+ * Shows "Sign In" button when logged out, user name + sign out when logged in.
+ */
+
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, GraduationCap, Map, ClipboardCheck, Menu, X, Zap } from 'lucide-react';
+import { BookOpen, GraduationCap, Map, ClipboardCheck, Menu, X, Zap, LogIn, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
-export default function Navbar() {
+interface NavbarProps {
+  user: { name: string; email: string } | null;
+  onSignIn: () => void;
+  onSignOut: () => void;
+}
+
+export default function Navbar({ user, onSignIn, onSignOut }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
@@ -28,22 +39,50 @@ export default function Navbar() {
             </motion.div>
           </div>
           
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
-              {navItems.map((item, index) => (
-                <motion.a
-                  key={item.name}
-                  href={item.href}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="text-gray-300 hover:text-metallic-gold px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+          <div className="hidden md:flex items-center gap-8">
+            {navItems.map((item, index) => (
+              <motion.a
+                key={item.name}
+                href={item.href}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="text-gray-300 hover:text-metallic-gold px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <item.icon size={16} />
+                {item.name}
+              </motion.a>
+            ))}
+
+            {/* Auth button */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              {user ? (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-metallic-gold font-medium">
+                    {user.name}
+                  </span>
+                  <button
+                    onClick={onSignOut}
+                    className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20 transition-all"
+                  >
+                    <LogOut size={13} />
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={onSignIn}
+                  className="flex items-center gap-2 text-sm font-semibold text-matte-black bg-metallic-gold px-5 py-2 rounded-full hover:bg-gold-muted transition-all hover:scale-105 active:scale-95"
                 >
-                  <item.icon size={16} />
-                  {item.name}
-                </motion.a>
-              ))}
-            </div>
+                  <LogIn size={15} />
+                  Sign In
+                </button>
+              )}
+            </motion.div>
           </div>
 
           <div className="md:hidden">
@@ -98,15 +137,26 @@ export default function Navbar() {
             </div>
 
             <div className="mt-auto pt-12 border-t border-white/10">
-              <p className="text-gray-500 text-sm mb-4 uppercase tracking-widest font-bold">Kaigo Strategist Academy</p>
-              <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-metallic-gold">
-                  <Zap size={20} />
+              {user ? (
+                <div className="flex items-center justify-between">
+                  <p className="text-metallic-gold font-bold">{user.name}</p>
+                  <button
+                    onClick={() => { onSignOut(); setIsOpen(false); }}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </button>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-metallic-gold">
-                  <GraduationCap size={20} />
-                </div>
-              </div>
+              ) : (
+                <button
+                  onClick={() => { onSignIn(); setIsOpen(false); }}
+                  className="w-full gold-button flex items-center justify-center gap-2"
+                >
+                  <LogIn size={18} />
+                  Sign In / Sign Up
+                </button>
+              )}
             </div>
           </motion.div>
         )}

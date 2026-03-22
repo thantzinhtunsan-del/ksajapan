@@ -1,7 +1,16 @@
+/**
+ * Hero.tsx — updated
+ * "Start Learning" now opens the AuthModal.
+ */
+
 import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 
-export default function Hero() {
+interface HeroProps {
+  onStartLearning: () => void;
+}
+
+export default function Hero({ onStartLearning }: HeroProps) {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Elements */}
@@ -27,7 +36,9 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* ← This button now triggers the auth modal */}
             <motion.button
+              onClick={onStartLearning}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="gold-button flex items-center gap-2"
@@ -46,7 +57,7 @@ export default function Hero() {
           </div>
         </motion.div>
 
-        {/* Stats or Trust Elements */}
+        {/* Stats */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
