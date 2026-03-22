@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, Zap, Target, Lightbulb } from 'lucide-react';
+import { ChevronLeft, Zap, Target, Brain, Clock, MessageSquare, Lightbulb } from 'lucide-react';
 
 const SUBJECTS = [
   '人間の尊厳と自立',
-  '人間関係とコミュニケーション',
   '社会の理解',
   '介護の基本',
   'コミュニケーション技術',
@@ -18,113 +17,431 @@ const SUBJECTS = [
   '総合問題',
 ];
 
-interface Hack {
-  title: string;
-  sigmaStrategy: string;
-  trapAlert: string;
+interface SubjectData {
+  coreIdea: string;
+  highYield: string[];
+  traps: string[];
+  examHacks: string[];
+  studyStrategy: string[];
+  memoryTips: string[];
+  sigmaMessage: string;
 }
 
-const STRATEGIES: Record<string, Hack[]> = {
-  '人間の尊厳と自立': [
-    {
-      title: 'Human Dignity & Independence',
-      sigmaStrategy: 'Focus on the concept of "Self-Determination" and "Normalisation".',
-      trapAlert: 'Avoid choices that treat users as passive recipients of care.',
-    },
-  ],
-  '人間関係とコミュニケーション': [
-    {
-      title: 'Relationships & Communication',
-      sigmaStrategy: 'Emphasize "Empathy" and "Acceptance" (受容).',
-      trapAlert: 'Watch out for judgmental or dismissive responses.',
-    },
-  ],
-  '社会の理解': [
-    {
-      title: 'Understanding Society',
-      sigmaStrategy: 'Master the "Long-term Care Insurance System" (介護保険制度).',
-      trapAlert: 'Don\'t confuse municipal roles with national government roles.',
-    },
-  ],
-  '介護の基本': [
-    {
-      title: 'User is the Boss (自己決定)',
-      sigmaStrategy: '利用者が自分で決める（自己決定）を助けるのが正解です。「自立支援」という言葉を探してください。',
-      trapAlert: '「安全のために拘束する」「家族の希望通りにする」「介護職が決める」はすべて×です。',
-    },
-  ],
-  'コミュニケーション技術': [
-    {
-      title: 'Communication Techniques',
-      sigmaStrategy: 'Focus on "Active Listening" and "Non-verbal Communication".',
-      trapAlert: 'Avoid closed questions when open questions are more appropriate.',
-    },
-  ],
-  '生活支援技術': [
-    {
-      title: 'Life Support Techniques',
-      sigmaStrategy: 'Apply "Body Mechanics" to ensure safety for both user and caregiver.',
-      trapAlert: 'Never ignore the user\'s remaining abilities (残存能力).',
-    },
-  ],
-  '介護過程': [
-    {
-      title: 'Care Process',
-      sigmaStrategy: 'Understand the PDCA cycle: Assessment -> Planning -> Implementation -> Evaluation.',
-      trapAlert: 'Do not skip the assessment phase before planning.',
-    },
-  ],
-  '発達と老化の理解': [
-    {
-      title: 'Development & Aging',
-      sigmaStrategy: 'Distinguish between normal aging and pathological changes.',
-      trapAlert: 'Avoid assuming all elderly people have dementia.',
-    },
-  ],
-  '認知症の理解': [
-    {
-      title: 'Understanding Dementia',
-      sigmaStrategy: 'Focus on "Person-Centered Care" and understanding BPSD causes.',
-      trapAlert: 'Never correct or argue with a person experiencing delusions.',
-    },
-  ],
-  '障害の理解': [
-    {
-      title: 'Understanding Disabilities',
-      sigmaStrategy: 'Learn the "Social Model of Disability" and ICF classification.',
-      trapAlert: 'Don\'t focus solely on the medical diagnosis or limitations.',
-    },
-  ],
-  'こころとからだのしくみ': [
-    {
-      title: 'Mind & Body Mechanism',
-      sigmaStrategy: 'Understand basic anatomy and physiological responses to aging.',
-      trapAlert: 'Watch out for incorrect medical terminology or logic.',
-    },
-  ],
-  '医療的ケア': [
-    {
-      title: 'Medical Care',
-      sigmaStrategy: 'Strictly follow "Safety Protocols" for suctioning and tube feeding.',
-      trapAlert: 'Never perform medical acts beyond the legal scope of a care worker.',
-    },
-  ],
-  '総合問題': [
-    {
-      title: 'Comprehensive Problems',
-      sigmaStrategy: 'Integrate all domains to solve complex case studies.',
-      trapAlert: 'Don\'t miss the specific context provided in the case description.',
-    },
-  ],
+const SUBJECT_DATA: Record<string, SubjectData> = {
+  '人間の尊厳と自立': {
+    coreIdea: `介護の「一番大切なルール」を学ぶ科目。問題数は少ないが、ここを間違えると他の科目も解けなくなる。
+ကူညီစောင့်ရှောက်ရေး (Kaigo) ရဲ့ အခြေခံအကျဆုံး "စည်းမျဉ်း" ကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။ မေးခွန်းအရေအတွက် နည်းသော်လည်း ဤအပိုင်းကို နားမလည်ပါက အခြားဘာသာရပ်များတွင်ပါ အမှားမှားအယွင်းယွင်း ဖြစ်စေနိုင်သည်။
+
+日本語：利用者を「一人の人間」として敬い、自分の人生を自分で決めてもらうこと。
+ミャンマー語：အဘိုးအဘွားများကို "လူသားတစ်ဦး" အဖြစ် လေးစားမှုရှိရန်နှင့် မိမိဘဝကို မိမိဘာသာ ဆုံးဖြတ်နိုင်စေရန် ပံ့ပိုးပေးခြင်း။`,
+    highYield: [
+      '介護の基本理念： リハビリテーション、ノーマライゼーション（Normalization）',
+      '人権と尊厳： 憲法第13条（個人の尊重）、第25条（生存権）',
+      'QOL (Quality of Life)： 生活の質。単に長生きするのではなく、どう良く生きるか。',
+      'ADLとIADL： 日常生活動作の違い。',
+      '自己決定： 利用者が自分で選ぶ権利。',
+    ],
+    traps: [
+      '「やってあげる」思考： 「危ないから歩かせない」「介護者が全部決める」という選択肢はすべて×（バツ）。',
+      '用語の混同： 「自立」を「一人で全部できること」と勘違いするミス。介護における自立は「自分で選ぶこと」を含む。',
+    ],
+    examHacks: [
+      '「利用者中心」が絶対の正解： 迷ったら「利用者の気持ちを一番大切にしている選択肢」を選べ。',
+      'パターンの暗記： 「ノーマライゼーション ＝ 障害があっても普通の生活」というキーワードのセットだけで1点取れる。',
+      '深追い厳禁： この科目はわずか2問程度。難しい法律を覚えるより、基本用語だけ押さえて次に進め。',
+    ],
+    studyStrategy: [
+      '時間はかけない： 15分で重要用語（QOL, アドボカシー, 自己決定）の意味を確認するだけでいい。',
+      '過去問のみ： テキストを読むな。過去3年分のこの科目の問題（合計6問程度）を解いて、傾向を掴むだけで完了。',
+    ],
+    memoryTips: [
+      'アドボカシー (Advocacy) ＝ 代弁： 「アド（あど）の声（こえ）を代わりに出す」と覚えろ。利用者の代わりに意見を言うことだ。',
+      '憲法25条 ＝ ニコ（25）ニコ生きる生存権： 健康で文化的な最低限度の生活。',
+    ],
+    sigmaMessage: '「たった2問しかない。だが、ここで『介護者の都合』を優先するような思考をしている奴は、試験全体で落ちる。思想を叩き込め。深追いはするな。15分で終わらせろ。」',
+  },
+
+  '社会の理解': {
+    coreIdea: `介護福祉士として働くための「日本のルール（法律と制度）」を学ぶ科目。
+ကူညီစောင့်ရှောက်ရေး (Kaigo) ဝန်ထမ်းအဖြစ် အလုပ်လုပ်ရန်အတွက် "ဂျပန်နိုင်ငံ၏ စည်းမျဉ်းများ (ဥပဒေနှင့် စနစ်များ)" ကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။
+
+日本語：日本の社会保障制度や介護保険法を理解し、利用者の生活を支える仕組みを知ること。
+ミャンマー語：ဂျပန်နိုင်ငံ၏ လူမှုဖူလုံရေးစနစ်နှင့် ပြုစုစောင့်ရှောက်ရေးအာမခံဥပဒေ (Kaigo Hoken) ကို နားလည်ပြီး၊ အဘိုးအဘွားများ၏ ဘဝကို ထောက်ပံ့ပေးထားသည့် လုပ်ငန်းစဉ်များကို သိရှိရန်။`,
+    highYield: [
+      '社会保障の4本柱： 社会保険、公助（生活保護）、公衆衛生、社会福祉。',
+      '介護保険制度： 保険者（市町村）、被保険者（65歳以上と40-64歳）、財源（公費50%・保険料50%）。',
+      '生活保護： 補足性の原理（自分のお金や能力を使い切ってから）。',
+      '成年後見制度： 判断能力が不十分な人の権利を守る（法定後見と任意後見）。',
+      '個人情報保護法： 利用者の秘密を守る義務。',
+    ],
+    traps: [
+      '数字のワナ： 第1号被保険者（65歳以上）と第2号被保険者（40歳〜64歳）の年齢や条件を逆にする。',
+      '財源の内訳： 介護保険の半分は「税金（公費）」、半分は「みんなが払う保険料」だ。ここを間違える奴が多い。',
+      '生活保護の条件： 家族がいても、本当にお金がなければ受けられる。「家族がいたら絶対ダメ」は間違いだ。',
+    ],
+    examHacks: [
+      '「市町村」が主役： 介護保険の運営（保険者）や申請の窓口は、すべて「市町村（特別区）」だ。「国」や「都道府県」という選択肢はだいたい×（バツ）。',
+      '申請主義： 日本の福祉は、自分（または家族）が「助けて」と申請しないと始まらない。待っていてもサービスは来ない。',
+      '2号被保険者の特定疾病： 40〜64歳の人が介護保険を使うには「がん」や「若年性認知症」など16種類の決まった病気が必要だ。',
+    ],
+    studyStrategy: [
+      '深追いは死を招く： 法律は難しすぎる。満点を狙わず、介護保険の基本（年齢、お金、窓口）だけ完璧にしろ。',
+      'ニュースを見ろ： 「少子高齢化」や「介護報酬改定」など、今の日本のニュースに出る言葉がそのまま試験に出る。',
+    ],
+    memoryTips: [
+      '40歳は「し（4）じゅう（10）」の保険： 40歳から介護保険料の支払いが始まる。',
+      '社会保険の5種類： 「医療・年金・雇用・労災・介護」。これ以外の「生命保険」などは間違い。',
+    ],
+    sigmaMessage: '「法律は漢字が多くて難しい。だが、ここを捨てると合格はない。全部覚えようとするな。介護保険の仕組みだけは死ぬ気で頭に叩き込め。市町村がボスだ、それだけは忘れるな。」',
+  },
+
+  '介護の基本': {
+    coreIdea: `介護福祉士として「どう動くべきか」「何を守るべきか」という土台。
+ကူညီစောင့်ရှောက်သူတစ်ဦးအနေဖြင့် "မည်သို့လုပ်ဆောင်ရမည်နည်း" နှင့် "မည်သည့်အချက်များကို လိုက်နာစောင့်ထိန်းရမည်နည်း" ဆိုသည့် အခြေခံအုတ်မြစ်ဖြစ်သည်။
+
+日本語：利用者の自立を助け、プライバシーを守り、チームで働くルールを理解すること。
+ミャンマー語：အဘိုးအဘွားများ၏ ကိုယ်တိုင်ရပ်တည်နိုင်မှုကို ကူညီရန်၊ ကိုယ်ရေးကိုယ်တာ (Privacy) ကို စောင့်ထိန်းရန်နှင့် အဖွဲ့အစည်းနှင့် လုပ်ဆောင်ရမည့် စည်းမျဉ်းများကို နားလည်ရန်။`,
+    highYield: [
+      '自立支援： 「できないことをやる」のではなく「できることを増やす」。',
+      'ICF（国際生活機能分類）： 人の生活を「健康状態」「環境」「個人」の全方向から見る考え方。',
+      'プライバシーと守秘義務： 情報を勝手に話さない。SNS投稿禁止。',
+      'リハビリテーション： 全人間的復権。',
+      '多職種連携： 看護師やケアマネジャーと協力すること。',
+    ],
+    traps: [
+      '「家族の希望」を優先する： 家族が「歩かせないで」と言っても、本人が歩きたいなら本人の意思を尊重する（選択肢のワナに注意）。',
+      'ICFの用語ミス： 「参加（仕事・趣味）」と「活動（家事・歩行）」を逆にするミス。',
+    ],
+    examHacks: [
+      'ICFは図で覚えろ： 毎年必ず出る。矢印の向きや項目名を暗記するだけで1点確定。',
+      '「～に任せる」は×： 「看護師に任せる」「家族に決めてもらう」という責任転嫁の選択肢はだいたい間違い。',
+      'リハビリの4分類： 医学的、職業的、社会的、教育的。この4つをセットで覚えろ。',
+    ],
+    studyStrategy: [
+      'ICFに全集中： ICFの構成要素（心身機能、活動、参加など）を1時間で完璧にしろ。',
+      '倫理規定を読む： 介護福祉士会の「倫理綱領」をさらっと読んで、「プライバシー保護」の重要性を頭に入れろ。',
+    ],
+    memoryTips: [
+      'ICFの「参加」： 「外（社会）に出て、役割を持つ」こと。結婚式に行く、町内会に出る、仕事をする。',
+      'ICFの「活動」： 「自分一人で完結する動作」。お風呂に入る、料理を作る、歩く。',
+    ],
+    sigmaMessage: '「ここは介護の『常識』を問う場所だ。自分の経験だけで解くな。試験が求めている『理想の介護士像』になりきって解け。ICFを捨てている奴に合格はない。」',
+  },
+
+  'コミュニケーション技術': {
+    coreIdea: `利用者や家族、チームと「どう話すか」「どう聞くか」のテクニック。
+အဘိုးအဘွားများ၊ မိသားစုဝင်များ၊ လုပ်ဖော်ကိုင်ဖက်များနှင့် "မည်သို့စကားပြောဆိုရမည်နည်း" နှင့် "မည်သို့နားထောင်ပေးရမည်နည်း" ဆိုသည့် နည်းစနစ်များဖြစ်သည်။
+
+日本語：相手の気持ちを受け止め（共感）、信頼関係（ラポール）を築く技術。
+ミャンマー語：တစ်ဖက်လူ၏ ခံစားချက်ကို နားလည်ပေးပြီး (Co-feeling/Empathy)၊ ယုံကြည်မှု (Rapport) တည်ဆောက်သည့် နည်းပညာဖြစ်သည်။`,
+    highYield: [
+      'バイステックの7原則： 個別化、意図的な感情表出、受容、共感など。',
+      '非言語コミュニケーション： 表情、視線、しぐさ、パーソナルスペース。',
+      '質問の技法： 開かれた質問（Open question）と 閉じられた質問（Closed question）。',
+      '共感的理解： 相手の立場に立って話を聴く。',
+      '構音障害・失語症への対応： 筆談、絵カード、短い言葉で話す。',
+    ],
+    traps: [
+      '「励まし」のワナ： 落ち込んでいる人に「頑張ってください」と言う選択肢は、だいたい×（バツ）。',
+      '「説得」のワナ： 利用者を説得して言うことを聞かせるのは間違い。「受容」が正解。',
+      '「同情」と「共感」の混同： かわいそうと思うのが「同情」。相手の苦しさを一緒に感じるのが「共感」。',
+    ],
+    examHacks: [
+      '「開かれた質問」を選べ： 「はい/いいえ」で答えられない質問（例：「どうしたいですか？」）は、利用者の思いを引き出す良い方法として正解になりやすい。',
+      '非言語が最強： 言葉（7%）よりも、見た目や態度（93%）が重要という「メラビアンの法則」を意識しろ。',
+      '沈黙を待て： 利用者が黙ったら「急かさず待つ」のが正解パターン。',
+    ],
+    studyStrategy: [
+      'バイステックの7原則を丸暗記： これだけで1〜2点取れる。特に「非審判的態度（決めつけない）」は最重要。',
+      '「閉じられた質問」の使い所を覚える： 認知症の人や疲れている人には、逆に「はい/いいえ」で答えられる質問が有効。この例外パターンを狙え。',
+    ],
+    memoryTips: [
+      'ラポール ＝ 「心の橋」： フランス語で「橋を架ける」。信頼関係のこと。',
+      'バイス（バイステック）の「受容」： 「ありのままを受け入れる」。否定も肯定もしない。',
+    ],
+    sigmaMessage: '「自分の話し方を自慢するな。相手に喋らせる奴が勝つ。バイステックの7原則を唱えろ。それができない奴に介護福祉士を名乗る資格はない。」',
+  },
+
+  '生活支援技術': {
+    coreIdea: `介護福祉士試験で 最も問題数が多い（約20問以上） 最重要科目。
+အဘိုးအဘွားများ၏ နေ့စဉ်ဘဝ (စားသောက်ခြင်း၊ အိမ်သာတက်ခြင်း၊ ရေချိုးခြင်း၊ လမ်းလျှောက်ခြင်း) တို့ကို ဘေးကင်းလုံခြုံစွာ ကူညီပေးသည့် နည်းစနစ်များဖြစ်သည်။
+
+日本語：利用者の「できること」を活かし、安全で安楽な生活を支える具体的な技術。
+ミャンマー語：အဘိုးအဘွားများ "လုပ်နိုင်သည်များကို" အသုံးချ၍ ဘေးကင်းပြီး သက်သောင့်သက်သာရှိသော နေထိုင်မှုဖြစ်စေရန် ပံ့ပိုးပေးသည့် လက်တွေ့နည်းပညာများ။`,
+    highYield: [
+      'ボディメカニクス： 介護者の腰痛を防ぎ、小さな力で動かす技術。',
+      '食事・口腔ケア： 誤嚥（ごえん）を防ぐ姿勢、食後の歯磨き。',
+      '排泄ケア： オムツは最終手段。トイレへの誘導が基本。',
+      '入浴・清潔： 心臓への負担を減らす「足元からのシャワー」。',
+      '移動・移乗： 杖の使い方（杖→患側→健側）、車椅子の操作。',
+    ],
+    traps: [
+      '「全介助」を選ぶ： 「全部やってあげる」は常に×（バツ）。',
+      'マヒ側の扱い： 脱健着患（脱ぐときは元気な方から、着るときはマヒした方から）を逆にする。',
+      '安全無視： 「麻痺側から支える」を忘れる。',
+    ],
+    examHacks: [
+      'ボディメカニクスの8原則： 「支持基底面を広く」「重心を低く」「相手を自分に近づける」。これだけ覚えれば移動の問題は解ける。',
+      '脱健着患（だっけん・ちゃっかん）： この4文字を呪文のように唱えろ。衣服の着脱問題はこれだけで正解できる。',
+      '階段の昇降： 上がるときは「元気な足（健側）」から。下がるときは「悪い方の足（患側）」から。',
+    ],
+    studyStrategy: [
+      '図を見て覚える： 文字で覚えるな。教科書の「姿勢の図」や「杖のつく位置」を目に焼き付けろ。',
+      '実技とリンク： 仕事中の動きを思い出し、「なぜその角度で車椅子を置くのか？」を理論（45度など）で確認しろ。',
+      '過去問を回す： 問題数が多いため、過去問を解くだけで点数が一番伸びる科目だ。',
+    ],
+    memoryTips: [
+      '脱健着患： 「脱ぐときは健康（健側）から、着るときは患者（患側）から」。',
+      '杖の歩行： 「杖・患・健（つえ・かん・けん）」のリズムで覚える。',
+      '重心： 重心を下げれば安定する。お相撲さんの構えと同じだ。',
+    ],
+    sigmaMessage: '「ここを落とす奴は不合格だ。全科目の中で一番配点が高い。現場の『自己流』を捨てて、教科書の『正しい技術』を脳に叩き込め。今日中にボディメカニクスを完璧にしろ。」',
+  },
+
+  '介護過程': {
+    coreIdea: `介護の「計画（プラン）」をどう作り、どう直していくかのプロセス。
+အဘိုးအဘွားများအတွက် "ပြုစုစောင့်ရှောက်မှု အစီအစဉ် (Plan)" ကို မည်သို့ရေးဆွဲရမည်နည်း၊ မည်သို့ ပြန်လည်ပြင်ဆင်ရမည်နည်း ဆိုသည့် လုပ်ငန်းစဉ်ဖြစ်သည်။
+
+日本語：根拠（エビデンス）に基づいた介護を行うためのPDCAサイクル。
+ミャンマー語：အထောက်အထား (Evidence) အပေါ် အခြေခံ၍ ပြုစုစောင့်ရှောက်မှုပေးရန် PDCA (အစီအစဉ်ဆွဲခြင်း၊ လုပ်ဆောင်ခြင်း၊ စစ်ဆေးခြင်း၊ ပြင်ဆင်ခြင်း) စက်ဝန်းဖြစ်သည်။`,
+    highYield: [
+      'アセスメント（収集・分析）： 利用者の情報を集め、課題（ニーズ）を見つける。',
+      '介護計画の立案： 「目標」と「具体策」を決める。',
+      '実施： 計画通りに介護を行う。',
+      'モニタリング・評価： 計画がうまくいったか確認し、次のアセスメントへ。',
+    ],
+    traps: [
+      '「介護者の目標」を書く： 「おむつを替える」は介護者の行動。目標は「トイレで排泄できる」という利用者の状態であるべき。',
+      'アセスメントを飛ばす： 情報を集める前に解決策を決めるのは×（バツ）。',
+    ],
+    examHacks: [
+      'PDCAの順番を死守せよ： 「アセスメント → 計画立案 → 実施 → 評価」の順番は絶対に入れ替わらない。',
+      '主観（S）と客観（O）を分ける： 利用者が言ったこと（主観）と、介護者が目で見た事実（客観）を区別する問題がよく出る。',
+      '「ニーズ」と「デマンド」の違い： 本人のわがまま（デマンド）ではなく、本当に解決すべき課題（ニーズ）を選ぶ。',
+    ],
+    studyStrategy: [
+      '4つのステップを暗記： 10分で「アセスメント・立案・実施・評価」の流れを頭に入れろ。',
+      '事例問題に慣れる： 「この状況で次に行うべきことは何か？」という問いに対し、常に「次のステップ」を答える練習をしろ。',
+    ],
+    memoryTips: [
+      'アセスメント ＝ 診察： お医者さんが病気を見つけるのと同じ。まずは調べることから始まる。',
+      'モニタリング ＝ 途中経過の観察： 「今のプランで大丈夫かな？」と見守ること。',
+    ],
+    sigmaMessage: '「介護は適当にやるもんじゃない。全部に『理由』が必要だ。この科目を理解すれば、事例問題が劇的に解けるようになる。無計画な勉強はやめろ、計画（プロセス）を学べ。」',
+  },
+
+  '発達と老化の理解': {
+    coreIdea: `人が生まれてから死ぬまでの「体の変化」を学ぶ科目。特に「老化（年を取ること）」で体に何が起きるかを知る。
+လူသားတစ်ဦး မွေးဖွားလာချိန်မှ သေဆုံးချိန်အထိ "ခန္ဓာကိုယ်ပြောင်းလဲမှုများ" ကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။ အထူးသဖြင့် "အိုမင်းရင့်ရော်လာခြင်း" ကြောင့် ခန္ဓာကိုယ်တွင် မည်သို့ဖြစ်ပျက်လာသည်ကို သိရှိရန်ဖြစ်သည်။
+
+日本語：加齢（年を取ること）による心身の変化と、高齢者に多い病気の特徴を理解すること。
+ミャンマー語：အသက်အရွယ်ကြီးရင့်လာမှုကြောင့် စိတ်ပိုင်းဆိုင်ရာနှင့် ရုပ်ပိုင်းဆိုင်ရာ ပြောင်းလဲမှုများ၊ သက်ကြီးရွယ်အိုများတွင် အဖြစ်များသော ရောဂါလက္ခဏာများကို နားလည်သဘောပေါက်ရန်။`,
+    highYield: [
+      '老化による身体的変化： 視力・聴力の低下、喉の渇きを感じにくい、骨密度低下。',
+      'エリクソンの発達段階： 老年期は「統合 vs 絶望」。',
+      '老年期特有の病気： 白内障、緑内障、誤嚥性肺炎、骨粗鬆症（こつそしょうしょう）。',
+      '恒常性（ホメオスタシス）の低下： 体温調節や水分バランスが崩れやすくなる。',
+      '知能の変化： 結晶性知能（経験）は下がりにくいが、流動性知能（計算・記憶）は下がる。',
+    ],
+    traps: [
+      '「すべて低下する」と思い込む： 結晶性知能（語彙や知恵）は高齢になっても維持・向上する。すべてがダメになるわけではない。',
+      '病気と老化の混同： 「物忘れ」は老化だが、「日常生活ができないほどの記憶障害」は病気（認知症）。',
+    ],
+    examHacks: [
+      '「個人差」という言葉に注目： 老化の進み方は人によって違う。「個人差がある」という選択肢は正解になりやすい。',
+      '脱水のサイン： 高齢者は喉の渇きを感じにくい。だから「本人が言わなくても水分補給」が正解パターン。',
+    ],
+    studyStrategy: [
+      '「自分の祖父母」の変化を想像： 難しい医学用語より、身近な変化に置き換えて覚えろ。',
+      'エリクソンの8段階を1枚の表で覚える： 老年期の「統合 vs 絶望」だけは絶対に押さえろ。',
+    ],
+    memoryTips: [
+      '結晶性知能 ＝ 「経験の宝石」： 年を取っても磨かれ続ける知恵。語彙・判断力。',
+      '流動性知能 ＝ 「水のような柔軟さ」： 年を取ると少しずつ失われる。新しいことを素早く学ぶ力。',
+    ],
+    sigmaMessage: '「老化は病気じゃない。でも老化を知らずに高齢者を理解できるわけがない。この科目を丁寧にやれば、認知症や障害の科目も自然につながってくる。」',
+  },
+
+  '認知症の理解': {
+    coreIdea: `認知症の「種類・症状・ケアの考え方」をすべて学ぶ科目。毎年多く出題される。
+သတိမေ့ဖျောက်ရောဂါ (認知症) ၏ "အမျိုးအစားများ၊ လက္ခဏာများနှင့် ပြုစုစောင့်ရှောက်ရေးအတွေးအခေါ်" ကို လေ့လာရမည်။ နှစ်တိုင်း မေးခွန်းများ များပြားစွာ ထွက်သည်။
+
+日本語：4大認知症の特徴を理解し、BPSDへの適切な対応を学ぶこと。
+ミャンマー語：သတိမေ့ဖျောက်ရောဂါ ၄ မျိုး၏ ဝိသေသများကို နားလည်ပြီး BPSD (အပြုအမူ/စိတ်ပိုင်းဆိုင်ရာ လက္ခဏာ) ကို မည်သို့ ကိုင်တွယ်ရမည်ကို လေ့လာရမည်။`,
+    highYield: [
+      '4大認知症： アルツハイマー型、血管性、レビー小体型、前頭側頭型。',
+      '中核症状： 記憶障害、見当識障害（時間や場所がわからない）、判断能力の低下。',
+      'BPSD（周辺症状）： 徘徊、幻視、抑うつ、暴言。ケアで改善できる。',
+      '認知症ケアの理念： パーソン・センタード・ケア（その人中心のケア）。',
+      '若年性認知症： 65歳未満で発症。仕事や経済的支援が重要。',
+    ],
+    traps: [
+      '中核症状とBPSDの混同： 「記憶障害」はBPSDではない（脳が壊れたことによる中核症状）。',
+      '「否定・訂正」の選択肢： 嘘をついているわけではないので、「違いますよ」と否定する対応はすべて×（バツ）。',
+    ],
+    examHacks: [
+      'レビー小体型 ＝ 「幻視」（いないものが見える）、パーキンソン症状。',
+      '血管性 ＝ 「まだら認知症」（できることとできないことの差が激しい）。',
+      '前頭側頭型 ＝ 「脱抑制」（万引き、同じ行動を繰り返す、性格変化）。',
+      'BPSDの理由は「不安」： 徘徊や怒りは、本人の不安や不快（トイレに行きたい、場所が怖い）から来る。理由を探す選択肢が正解。',
+    ],
+    studyStrategy: [
+      '表を1つ覚えるだけ： 4つの認知症の特徴をまとめた表を20分で暗記しろ。これで3点は取れる。',
+      '事例問題を解く： 「ご飯を食べたのに『まだ？』と言う利用者への対応」など、現場でよくあるパターンの正解（否定しない、一緒に探す）を覚えろ。',
+    ],
+    memoryTips: [
+      'レビー ＝ 「ヘビー（重い）な幻視」： 重い幻が見えるのがレビー小体型。',
+      'アルツハイマー ＝ 「歩（ある）けなくなるまで進行」： 一番多く、ゆっくり全体的に進む。',
+    ],
+    sigmaMessage: '「認知症の問題は、サービス問題（ボーナス）だ。4つの型とBPSDの仕組みさえ覚えれば、確実に点が入る。現場のイライラを持ち込むな。試験では『仏の心』で解け。」',
+  },
+
+  '障害の理解': {
+    coreIdea: `障害がある人の法律、種類、そして「どう支えるか」を学ぶ科目。
+မသန်စွမ်းသူများအတွက် ဥပဒေများ၊ မသန်မစွမ်းမှု အမျိုးအစားများနှင့် "မည်သို့ ပံ့ပိုးကူညီရမည်နည်း" ကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။
+
+日本語：障害を「個人の問題」ではなく「社会の問題」として捉え、自立を支えること。
+ミャンマー語：မသန်မစွမ်းမှုကို "လူတစ်ဦး၏ ပြဿနာ" ဟု မမှတ်ယူဘဲ "လူ့အဖွဲ့အစည်း၏ ပြဿနာ" ဟု မြင်ကြည့်ကာ ကိုယ်တိုင်ရပ်တည်နိုင်အောင် ကူညီခြင်းဖြစ်သည်။`,
+    highYield: [
+      '障害者基本法・障害者総合支援法： 法律の名前と目的。',
+      '身体障害： 視覚、聴覚、肢体不自由、内部障害（心臓・腎臓など）。',
+      '知的障害： 知能指数（IQ）による分類。',
+      '精神障害： 統合失調症、気分障害（うつ病）。',
+      '発達障害： 自閉スペクトラム症（ASD）、ADHD、学習障害（LD）。',
+      '高次脳機能障害： 事故などで脳を損傷した後の記憶障害や注意障害。',
+    ],
+    traps: [
+      '「ICIDH」と「ICF」の混同： 昔の考え方（マイナス面重視）と今の考え方（プラス面重視）を入れ替えて出題される。',
+      '「内部障害」の忘れ： 車椅子や杖の人だけでなく、心臓や透析（人工腎臓）の人も身体障害者手帳の対象であることを忘れるな。',
+    ],
+    examHacks: [
+      '「社会モデル」を選べ： 「本人が歩けないのが悪い（個人モデル）」ではなく「階段しかない社会が悪い（社会モデル）」という考え方が今の正解。',
+      'ASD（自閉症）： コミュニケーションが苦手、こだわりが強い。',
+      'ADHD： じっとしていられない（多動）、不注意。',
+      '法律の対象： 「難病」も障害者総合支援法の対象に含まれる。これは頻出だ。',
+    ],
+    studyStrategy: [
+      '障害の「種類」を整理： 1時間で「身体・知的・精神・発達・高次脳」の特徴を1行ずつ書けるようにしろ。',
+      '支援法を深追いしない： 法律は細かい。まずは「市町村が窓口であること」など、大きな仕組みだけ押さえればいい。',
+    ],
+    memoryTips: [
+      '高次脳機能障害（こうじのう）： 「工事（こうじ）のあとの脳」。脳の工事（手術や事故）のあとに、性格が変わったり物忘れしたりすること。',
+      'リハビリテーション： 「再び（re）ふさわしい（habilis）状態にする」。ただの訓練ではなく、権利の回復。',
+    ],
+    sigmaMessage: '「法律の名前でビビるな。中身は『困っている人をどう助けるか』のルールに過ぎない。カタカナの病名や法律名に慣れろ。そこを突破すれば、得点源に変わる。」',
+  },
+
+  'こころとからだのしくみ': {
+    coreIdea: `人間の体の構造（骨、筋肉、臓器）と、心がどう動くかのメカニズムを学ぶ。
+လူသားတို့၏ ခန္ဓာကိုယ်တည်ဆောက်ပုံ (အရိုး၊ ကြွက်သား၊ ကိုယ်တွင်းအင်္ဂါများ) နှင့် စိတ်လှုပ်ရှားမှု ဖြစ်စဉ်များကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။
+
+日本語：生きていくための体のルール（解剖生理）を知り、介護に活かすこと。
+ミャンマー語：အသက်ရှင်သန်ရန်အတွက် ခန္ဓာကိုယ်၏ စည်းမျဉ်းများကို သိရှိပြီး ကူညီစောင့်ရှောက်ရေးတွင် အသုံးချရန်။`,
+    highYield: [
+      'バイタルサイン： 体温、血圧、脈拍、呼吸。正常値を知る。',
+      '廃用症候群（はいようしょうこうぐん）： 動かないことで体が弱ること。',
+      '睡眠のメカニズム： レム睡眠（体は休み、脳は動く）とノンレム睡眠（脳も休む）。',
+      '咀嚼（そしゃく）と嚥下（えんげ）： 食べ物を噛んで飲み込む仕組み。',
+      'ボディイメージ： 自分の体の範囲や状態をどう感じているか。',
+    ],
+    traps: [
+      '「レム睡眠」の覚え間違い： レム睡眠中に「夢を見る」ことを忘れるな。',
+      '血圧の変動： 高齢者は「立ち上がった時」に血圧が下がりやすい（起立性低血圧）。上がると勘違いするな。',
+      '左心不全と右心不全： どっちが「むくみ」でどっちが「息切れ」か混同しやすい。',
+    ],
+    examHacks: [
+      'バイタルサインの「数値」は必須： 体温（36-37℃）、血圧（140/90以上が高血圧）、脈拍（60-100回/分）。これだけで解ける問題がある。',
+      '「廃用症候群」の症状： 筋力低下だけでなく、うつ状態や便秘も含まれる。全身に影響が出ると覚えろ。',
+      '空腹と満腹： 摂食中枢（お腹空いた）と満腹中枢（お腹いっぱい）の場所（視床下部）をセットで覚えろ。',
+    ],
+    studyStrategy: [
+      '「自分の体」を教科書にする： 自分の脈を測る、自分の呼吸を数える。実感を伴えば忘れない。',
+      '図解を暗記： 消化管の順番（口→食道→胃→小腸→大腸→肛門）など、流れを絵で描けるようにしろ。',
+      '深追い禁止： 医学部レベルの知識はいらない。基礎だけやって次の科目に時間を回せ。',
+    ],
+    memoryTips: [
+      'レム(REM)睡眠： Rapid Eye Movement（目がキョロキョロ動く）。脳が起きているから夢を見る。',
+      '脱健着患（だっけん・ちゃっかん）： 体の仕組みと生活支援技術は繋がっている。マヒがある側の動きを想像しろ。',
+    ],
+    sigmaMessage: '「カタカナの臓器名や難しい漢字に逃げるな。自分の体で起きていることだ。バイタルサインの正常値すら言えない奴は、現場に出るな。ここは暗記じゃなく『確認』だ。」',
+  },
+
+  '医療的ケア': {
+    coreIdea: `介護福祉士ができる「医行為（いこうい）」のルールと手順を学ぶ。
+ကူညီစောင့်ရှောက်သူ (Kaigo) များ လုပ်ဆောင်ခွင့်ရှိသည့် "ဆေးဘက်ဆိုင်ရာ လုပ်ဆောင်ချက်များ" ၏ စည်းမျဉ်းများနှင့် လုပ်ငန်းစဉ်များကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။
+
+日本語：喀痰吸引（たんを吸う）と経管栄養（チューブで栄養を入れる）を安全に行う知識。
+ミャンマー語：သလိပ်စုပ်ယူခြင်း (Sputum Suction) နှင့် ပိုက်ဖြင့် အာဟာရကျွေးခြင်း (Tube Feeding) တို့ကို ဘေးကင်းစွာ လုပ်ဆောင်နိုင်မည့် အသိပညာဖြစ်သည်။`,
+    highYield: [
+      '実施できる人： 実地研修を修了した介護福祉士等。',
+      '喀痰吸引（かくたんきゅういん）： 口腔内、鼻腔内、気管カニューレ内部。',
+      '経管栄養（けいかんえいよう）： 胃ろう、腸ろう、経鼻経管栄養。',
+      '清潔保持： 手洗い、使い捨て手袋の使用、消毒。',
+      '緊急時の対応： 異変を感じたらすぐに中止し、看護師に報告。',
+    ],
+    traps: [
+      '「誰でもできる」と勘違い： 資格があれば明日からできるわけではない。「実地研修」が必要な点に注意。',
+      '吸引時間のミス： 長く吸えばいいわけではない。「1回15秒以内」が鉄則だ。',
+      '温度管理の油断： 経管栄養の栄養剤は「体温に近い温度」が正解。冷たすぎると下痢をする。',
+    ],
+    examHacks: [
+      '「報告・連絡・相談」が最強の正解： 医療的ケアの問題で「自分の判断で続ける」は100%間違い。少しでも変なら「看護師に報告」を選べ。',
+      '物品の管理： 吸引カテーテルは「水道水」ではなく「滅菌精製水」や「消毒液」で保管・洗浄するパターンを覚えろ。',
+      '深さの制限： 吸引チューブを奥まで入れすぎてはいけない。抵抗を感じたら引くのが正解。',
+    ],
+    studyStrategy: [
+      '手順の「順番」を覚える： 準備 → 本人確認 → 実施 → 片付け → 記録。この流れはどのケアも同じだ。',
+      '数字だけ暗記： 吸引は15秒以内。栄養剤の高さは胃から50cm程度。これだけ暗記して1点取れ。',
+    ],
+    memoryTips: [
+      '「い・ろ・う（胃ろう）」は「い（1）番・ろ（6）くな・う（う）」： 胃に穴を開けて直接栄養を入れる。',
+      '15秒のルール： 息を止めてみろ。15秒以上は苦しいだろ？利用者も同じだ。',
+    ],
+    sigmaMessage: '「人の命に直結する科目だ。ミスは許されない。手順を一つでも飛ばしたら不合格だと思え。ルールを守るのがプロだ。暗記じゃなく、手順を体に染み込ませろ。」',
+  },
+
+  '総合問題': {
+    coreIdea: `13科目の知識をすべて使って、1つの「事例（ストーリー）」を解決する試験の最終ステージ。
+ဘာသာရပ် (၁၃) ခုလုံးမှ အသိပညာများကို အသုံးပြု၍ "သာဓကဖြစ်ရပ် (Story)" တစ်ခုကို ဖြေရှင်းရသည့် စာမေးပွဲ၏ နောက်ဆုံးအဆင့်ဖြစ်သည်။
+
+日本語：長い文章を読み、利用者の病気、法律、介護技術を組み合わせて正解を導くこと。
+ミャンマー語：စာသားရှည်များကို ဖတ်ရှုပြီး အဘိုးအဘွား၏ ရောဂါ၊ ဥပဒေနှင့် ပြုစုစောင့်ရှောက်ရေး နည်းပညာများကို ပေါင်းစပ်ကာ အဖြေမှန်ကို ထုတ်ယူခြင်းဖြစ်သည်။`,
+    highYield: [
+      '事例の状況把握： 年齢、性別、病気、家族構成、住んでいる場所（施設か自宅か）。',
+      '情報の整理： 疾患（脳梗塞など）と、それに伴う障害（麻痺など）の組み合わせ。',
+      '適切な声かけ： その状況で利用者が一番安心する言葉は何か。',
+      '多職種との連携： ケアマネジャーや医師にどのタイミングで相談するか。',
+    ],
+    traps: [
+      '時間が足りなくなる： 文章が長いため、最初から丁寧に読みすぎて最後まで終わらない。',
+      '勝手な想像： 問題文に書いていないことを「たぶんこうだろう」と勝手に決めつけて解く。',
+      '知識のバラバラ： 「病気」の知識はあるが、それを「生活支援」に繋げられない。',
+    ],
+    examHacks: [
+      '「問い」から先に読め： 先に「何を聞かれているか」を確認してから、事例の文章を読め。必要な情報だけを探す（スキャニング）のがプロのやり方だ。',
+      '図を描け： 家族構成やマヒの側（右か左か）を、余白にサッとメモしろ。頭の中だけで考えるな。',
+      '消去法： 明らかにダメな選択肢（否定、強制、放置）を消せば、正解は2つに絞られる。',
+    ],
+    studyStrategy: [
+      '過去問の「事例」を1日1つ解く： 新しい知識はいらない。今持っている知識を「つなげる」練習をしろ。',
+      '音読する： N3〜N2レベルだと、長い日本語は目が滑る。声に出して読むと、状況が理解しやすくなる。',
+    ],
+    memoryTips: [
+      '「自分がその場の介護職」になりきる： 紙の上の問題だと思うな。目の前にそのおじいちゃんがいると思って、プロとしてどう動くか考えろ。',
+      '3問1セット： 総合問題は1つの事例に3つの問いがある。1問目が解ければ、2問目、3問目のヒントになることが多い。',
+    ],
+    sigmaMessage: '「ここが最後の勝負だ。知識はもうお前の頭にある。あとはそれを使うだけだ。焦るな、文章に騙されるな。事実だけを見て、最短ルートで正解を射抜け。勝ってこい。」',
+  },
 };
 
 export default function ExamHacks() {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const data = selectedSubject ? SUBJECT_DATA[selectedSubject] : null;
 
   return (
     <section id="examhacks" className="py-24 bg-matte-black relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -134,13 +451,13 @@ export default function ExamHacks() {
             Exam <span className="text-metallic-gold">Hacks</span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto">
-            Sigma Coach Strategic Playbooks for the National Exam.
+            Sigma Coach Strategic Playbooks — 介護福祉士国家試験対策
           </p>
         </motion.div>
 
         <AnimatePresence mode="wait">
           {!selectedSubject ? (
-            <motion.div 
+            <motion.div
               key="grid"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -156,100 +473,133 @@ export default function ExamHacks() {
                   onClick={() => setSelectedSubject(subject)}
                   className="group relative h-32 sm:h-48 bg-black/40 border border-metallic-gold/20 rounded-xl p-4 sm:p-6 flex items-center justify-center text-center transition-all hover:border-metallic-gold hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] gold-glow-hover"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-metallic-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <span className="text-sm sm:text-xl font-bold text-white group-hover:text-metallic-gold transition-colors leading-tight sm:leading-relaxed">
+                  <div className="absolute inset-0 bg-gradient-to-br from-metallic-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-xl" />
+                  <span className="text-sm sm:text-xl font-bold text-white group-hover:text-metallic-gold transition-colors leading-tight">
                     {subject}
                   </span>
                 </motion.button>
               ))}
             </motion.div>
-          ) : (
-            <motion.div 
+          ) : data ? (
+            <motion.div
               key="detail"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-black/40 border border-metallic-gold/30 rounded-2xl p-8 lg:p-12"
+              className="space-y-6"
             >
-              <button 
-                onClick={() => setSelectedSubject(null)}
-                className="flex items-center gap-2 text-metallic-gold hover:text-white transition-colors mb-8 group gold-glow-hover"
-              >
-                <ChevronLeft className="group-hover:-translate-x-1 transition-transform" />
-                Back to Subjects
-              </button>
+              {/* Header + Core Idea */}
+              <div className="bg-black/40 border border-metallic-gold/30 rounded-2xl p-6 lg:p-8">
+                <button
+                  onClick={() => setSelectedSubject(null)}
+                  className="flex items-center gap-2 text-metallic-gold hover:text-white transition-colors mb-6 group"
+                >
+                  <ChevronLeft className="group-hover:-translate-x-1 transition-transform" size={20} />
+                  Back to Subjects
+                </button>
+                <h3 className="text-3xl font-bold text-white mb-4">{selectedSubject}</h3>
+                <div className="h-0.5 w-20 bg-metallic-gold rounded-full mb-6" />
+                <p className="text-gray-300 leading-relaxed whitespace-pre-line text-sm">{data.coreIdea}</p>
+              </div>
 
-              <div className="flex flex-col lg:flex-row gap-12">
-                <div className="lg:w-1/3">
-                  <h3 className="text-3xl font-bold text-white mb-4 leading-tight">
-                    {selectedSubject}
-                  </h3>
-                  <div className="h-1 w-20 bg-metallic-gold rounded-full mb-6" />
-                  <p className="text-gray-400">
-                    Strategic Playbook by Sigma Coach. Focus on high-yield patterns and critical decision-making logic.
-                  </p>
+              {/* High Yield */}
+              <div className="bg-black/40 border border-white/10 rounded-2xl p-6 lg:p-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <Target className="text-metallic-gold" size={20} />
+                  <h4 className="font-bold text-metallic-gold text-sm uppercase tracking-widest">② ⚠️ よく出るポイント（High-Yield Topics）</h4>
                 </div>
+                <ul className="space-y-2">
+                  {data.highYield.map((item, i) => (
+                    <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
+                      <span className="text-metallic-gold mt-0.5 shrink-0">✦</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                <div className="lg:w-2/3 space-y-8">
-                  {STRATEGIES[selectedSubject] ? (
-                    STRATEGIES[selectedSubject].map((hack, idx) => (
-                      <motion.div 
-                        key={idx}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.1 }}
-                        className="bg-white/5 border border-white/10 rounded-xl p-8 space-y-8"
-                      >
-                        <div className="flex items-center gap-3 mb-2">
-                          <Zap className="text-metallic-gold" size={24} />
-                          <h4 className="text-2xl font-bold text-white">{hack.title}</h4>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                          {/* Sigma Strategy Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-metallic-gold">
-                              <Target size={18} />
-                              <span className="text-sm font-bold uppercase tracking-widest">Sigma Strategy</span>
-                            </div>
-                            <div className="p-4 bg-metallic-gold/10 border border-metallic-gold/20 rounded-lg">
-                              <p className="text-gray-200 leading-relaxed">
-                                {hack.sigmaStrategy}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Trap Alert Section */}
-                          <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-red-500">
-                              <Zap size={18} />
-                              <span className="text-sm font-bold uppercase tracking-widest">Trap Alert</span>
-                            </div>
-                            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-                              <p className="text-gray-200 leading-relaxed">
-                                {hack.trapAlert}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-20 text-center">
-                      <Lightbulb className="text-metallic-gold/20 mb-4" size={48} />
-                      <p className="text-gray-500 italic">
-                        Strategic content for this subject is being finalized by Sigma Coach. Check back soon for high-yield hacks.
-                      </p>
-                    </div>
-                  )}
+              {/* Traps + Exam Hacks */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-red-500/5 border border-red-500/20 rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Zap className="text-red-400" size={20} />
+                    <h4 className="font-bold text-red-400 text-sm uppercase tracking-widest">③ ❌ よくあるミス（Common Traps）</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {data.traps.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
+                        <span className="text-red-400 mt-0.5 shrink-0">✗</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-metallic-gold/5 border border-metallic-gold/20 rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Zap className="text-metallic-gold" size={20} />
+                    <h4 className="font-bold text-metallic-gold text-sm uppercase tracking-widest">④ ⚡ 合格ハック（Exam Hacks）</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {data.examHacks.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
+                        <span className="text-metallic-gold mt-0.5 shrink-0">⚡</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
+
+              {/* Study Strategy + Memory Tips */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-black/40 border border-blue-500/20 rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock className="text-blue-400" size={20} />
+                    <h4 className="font-bold text-blue-400 text-sm uppercase tracking-widest">⑤ ⏱️ 勉強戦略（Study Strategy）</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {data.studyStrategy.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
+                        <span className="text-blue-400 mt-0.5 shrink-0">→</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="bg-black/40 border border-purple-500/20 rounded-2xl p-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Brain className="text-purple-400" size={20} />
+                    <h4 className="font-bold text-purple-400 text-sm uppercase tracking-widest">⑥ 🧠 覚え方（Memory Tips）</h4>
+                  </div>
+                  <ul className="space-y-2">
+                    {data.memoryTips.map((item, i) => (
+                      <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
+                        <span className="text-purple-400 mt-0.5 shrink-0">💡</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Sigma Message */}
+              <div className="bg-gradient-to-r from-metallic-gold/10 to-gold-muted/5 border border-metallic-gold/30 rounded-2xl p-6 lg:p-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <MessageSquare className="text-metallic-gold" size={20} />
+                  <h4 className="font-bold text-metallic-gold text-sm uppercase tracking-widest">⑦ 🎯 Sigmaコーチメッセージ</h4>
+                </div>
+                <p className="text-gray-200 leading-relaxed text-sm italic">{data.sigmaMessage}</p>
+              </div>
             </motion.div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <Lightbulb className="text-metallic-gold/20 mb-4" size={48} />
+              <p className="text-gray-500 italic">Strategic content coming soon.</p>
+            </div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Decorative elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-metallic-gold/5 blur-[120px] rounded-full -mr-48 -mt-48" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-metallic-gold/5 blur-[120px] rounded-full -ml-48 -mb-48" />
     </section>
