@@ -1,8 +1,23 @@
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 
+const ALLOWED_ORIGINS = ['https://ksajapan.jp', 'https://www.ksajapan.jp'];
+
 const app = express();
 app.use(express.json());
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin ?? '';
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
 
 app.post('/api/ai-feedback', async (req, res) => {
   const apiKey = process.env.GEMINI_API_KEY;

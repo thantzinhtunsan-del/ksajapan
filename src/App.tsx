@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import VocabularyList from './components/VocabularyList';
@@ -8,6 +8,7 @@ import ExamHacks from './components/ExamHacks';
 import MockTest from './components/MockTest';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
+import { supabase } from './lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck, Shield } from 'lucide-react';
 
@@ -35,6 +36,31 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('vocab');
 
+  // Restore session on mount and subscribe to auth state changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser({
+          name: session.user.user_metadata?.full_name ?? session.user.email?.split('@')[0] ?? '',
+          email: session.user.email ?? '',
+        });
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser({
+          name: session.user.user_metadata?.full_name ?? session.user.email?.split('@')[0] ?? '',
+          email: session.user.email ?? '',
+        });
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const isAdmin = user ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
 
   const handleAuthSuccess = (userData: User) => {
@@ -43,11 +69,17 @@ export default function App() {
     setActiveTab('vocab');
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setActiveTab('vocab');
+  };
+
   const visibleTabs = TABS.filter((tab) => !tab.adminOnly || isAdmin);
 
   return (
     <div className="min-h-screen bg-matte-black selection:bg-metallic-gold/30">
-      <Navbar user={user} onSignIn={() => setShowAuthModal(true)} onSignOut={() => setUser(null)} />
+      <Navbar user={user} onSignIn={() => setShowAuthModal(true)} onSignOut={handleSignOut} />
 
       <main className="pt-20">
         {user ? (

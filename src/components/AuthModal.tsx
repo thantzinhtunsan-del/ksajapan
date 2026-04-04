@@ -6,11 +6,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthSuccess: (user: { name: string; email: string }) => void;
+}
+
+function mapSupabaseError(message: string): string {
+  if (message.includes('Invalid login credentials')) return 'Invalid email or password.';
+  if (message.includes('Email not confirmed')) return 'Please confirm your email before signing in.';
+  if (message.includes('User already registered')) return 'An account with this email already exists.';
+  if (message.includes('Password should be')) return 'Password must be at least 6 characters.';
+  return message;
 }
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
@@ -28,36 +37,64 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    // --- Replace this block with your real auth logic (Firebase, Supabase, etc.) ---
-    await new Promise((r) => setTimeout(r, 1000)); // Simulate network call
-
+    // Client-side pre-validation
     if (!form.email || !form.password) {
       setError('Please fill in all fields.');
-      setIsLoading(false);
       return;
     }
     if (mode === 'signup' && !form.name) {
       setError('Please enter your name.');
-      setIsLoading(false);
       return;
     }
     if (form.password.length < 6) {
       setError('Password must be at least 6 characters.');
-      setIsLoading(false);
       return;
     }
 
-    // On success, call onAuthSuccess with user info
-    onAuthSuccess({
-      name: form.name || form.email.split('@')[0],
-      email: form.email,
-    });
-    // --- End of auth block ---
-
-    setIsLoading(false);
+    setIsLoading(true);
+    try {
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: { data: { full_name: form.name } },
+        });
+        if (error) {
+          setError(mapSupabaseError(error.message));
+          return;
+        }
+        // Supabase may require email confirmation — user object still present
+        const user = data.user;
+        if (!user) {
+          setError('Sign up failed. Please try again.');
+          return;
+        }
+        onAuthSuccess({
+          name: user.user_metadata?.full_name ?? form.name,
+          email: user.email ?? form.email,
+        });
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+        if (error) {
+          setError(mapSupabaseError(error.message));
+          return;
+        }
+        const user = data.user;
+        onAuthSuccess({
+          name: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '',
+          email: user.email ?? form.email,
+        });
+      }
+    } catch {
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const switchMode = () => {
