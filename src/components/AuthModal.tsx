@@ -6,11 +6,20 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthSuccess: (user: { name: string; email: string }) => void;
+}
+
+function mapSupabaseError(message: string): string {
+  if (message.includes('Invalid login credentials')) return 'Invalid email or password.';
+  if (message.includes('Email not confirmed')) return 'Please confirm your email before signing in.';
+  if (message.includes('User already registered')) return 'An account with this email already exists.';
+  if (message.includes('Password should be')) return 'Password must be at least 6 characters.';
+  return message;
 }
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalProps) {
@@ -46,24 +55,41 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
     setIsLoading(true);
     try {
-      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/signin';
-      const body: Record<string, string> = { email: form.email, password: form.password };
-      if (mode === 'signup') body.name = form.name;
-
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error ?? 'Authentication failed. Please try again.');
-        return;
+      if (mode === 'signup') {
+        const { data, error } = await supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: { data: { full_name: form.name } },
+        });
+        if (error) {
+          setError(mapSupabaseError(error.message));
+          return;
+        }
+        // Supabase may require email confirmation — user object still present
+        const user = data.user;
+        if (!user) {
+          setError('Sign up failed. Please try again.');
+          return;
+        }
+        onAuthSuccess({
+          name: user.user_metadata?.full_name ?? form.name,
+          email: user.email ?? form.email,
+        });
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: form.email,
+          password: form.password,
+        });
+        if (error) {
+          setError(mapSupabaseError(error.message));
+          return;
+        }
+        const user = data.user;
+        onAuthSuccess({
+          name: user.user_metadata?.full_name ?? user.email?.split('@')[0] ?? '',
+          email: user.email ?? form.email,
+        });
       }
-
-      onAuthSuccess({ name: data.name, email: data.email });
     } catch {
       setError('Network error. Please check your connection and try again.');
     } finally {
