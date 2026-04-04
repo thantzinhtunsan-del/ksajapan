@@ -4,11 +4,12 @@ import { useState } from 'react';
 
 interface NavbarProps {
   user: { name: string; email: string } | null;
+  authLoading: boolean;
   onSignIn: () => void;
   onSignOut: () => void;
 }
 
-export default function Navbar({ user, onSignIn, onSignOut }: NavbarProps) {
+export default function Navbar({ user, authLoading, onSignIn, onSignOut }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -28,7 +29,9 @@ export default function Navbar({ user, onSignIn, onSignOut }: NavbarProps) {
 
           {/* Auth — desktop */}
           <div className="hidden md:flex items-center gap-3">
-            {user ? (
+            {authLoading ? (
+              <div className="h-8 w-24 rounded-full bg-white/10 animate-pulse" />
+            ) : user ? (
               <>
                 <span className="text-sm text-metallic-gold font-medium">{user.name}</span>
                 <button
@@ -86,7 +89,9 @@ export default function Navbar({ user, onSignIn, onSignOut }: NavbarProps) {
             </div>
 
             <div className="mt-auto pt-12 border-t border-white/10">
-              {user ? (
+              {authLoading ? (
+                <div className="h-10 w-full rounded-full bg-white/10 animate-pulse" />
+              ) : user ? (
                 <div className="flex items-center justify-between">
                   <p className="text-metallic-gold font-bold">{user.name}</p>
                   <button

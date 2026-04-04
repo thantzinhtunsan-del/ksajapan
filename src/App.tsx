@@ -47,12 +47,14 @@ async function resolveUser(supabaseUser: SupabaseUser): Promise<User> {
 export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('vocab');
 
   // Restore session on mount and subscribe to auth state changes
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) setUser(await resolveUser(session.user));
+      setAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -84,7 +86,26 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-matte-black selection:bg-metallic-gold/30">
-      <Navbar user={user} onSignIn={() => setShowAuthModal(true)} onSignOut={handleSignOut} />
+      <Navbar user={user} authLoading={authLoading} onSignIn={() => setShowAuthModal(true)} onSignOut={handleSignOut} />
+
+      {/* Full-screen loading — shown only until session is resolved */}
+      <AnimatePresence>
+        {authLoading && (
+          <motion.div
+            key="auth-loading"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-[60] bg-matte-black flex flex-col items-center justify-center"
+          >
+            <div className="text-3xl font-bold tracking-tighter mb-8">
+              <span className="text-white">KSA</span>
+              <span className="text-metallic-gold">.</span>
+            </div>
+            <div className="w-8 h-8 rounded-full border-2 border-metallic-gold/30 border-t-metallic-gold animate-spin" />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="pt-20">
         {user ? (
