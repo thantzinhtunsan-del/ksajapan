@@ -28,36 +28,47 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
-    // --- Replace this block with your real auth logic (Firebase, Supabase, etc.) ---
-    await new Promise((r) => setTimeout(r, 1000)); // Simulate network call
-
+    // Client-side pre-validation
     if (!form.email || !form.password) {
       setError('Please fill in all fields.');
-      setIsLoading(false);
       return;
     }
     if (mode === 'signup' && !form.name) {
       setError('Please enter your name.');
-      setIsLoading(false);
       return;
     }
     if (form.password.length < 6) {
       setError('Password must be at least 6 characters.');
-      setIsLoading(false);
       return;
     }
 
-    // On success, call onAuthSuccess with user info
-    onAuthSuccess({
-      name: form.name || form.email.split('@')[0],
-      email: form.email,
-    });
-    // --- End of auth block ---
+    setIsLoading(true);
+    try {
+      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/signin';
+      const body: Record<string, string> = { email: form.email, password: form.password };
+      if (mode === 'signup') body.name = form.name;
 
-    setIsLoading(false);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error ?? 'Authentication failed. Please try again.');
+        return;
+      }
+
+      onAuthSuccess({ name: data.name, email: data.email });
+    } catch {
+      setError('Network error. Please check your connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const switchMode = () => {
