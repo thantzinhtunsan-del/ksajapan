@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { supabase, insertProfile } from '../lib/supabase';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -70,6 +70,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
         if (!user) {
           setError('Sign up failed. Please try again.');
           return;
+        }
+        // Persist profile row; non-fatal if it fails (e.g. duplicate on re-signup)
+        try {
+          await insertProfile(user.id, form.name);
+        } catch {
+          // profile insert failure should not block the user
         }
         onAuthSuccess({
           name: user.user_metadata?.full_name ?? form.name,

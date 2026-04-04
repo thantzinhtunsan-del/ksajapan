@@ -8,7 +8,8 @@ import ExamHacks from './components/ExamHacks';
 import MockTest from './components/MockTest';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
-import { supabase } from './lib/supabase';
+import { supabase, fetchProfile } from './lib/supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck, Shield } from 'lucide-react';
 
@@ -31,6 +32,18 @@ const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boole
   { id: 'admin',      label: 'Admin',      icon: Shield, adminOnly: true },
 ];
 
+/** Resolve a Supabase user to local User, preferring the profiles table. */
+async function resolveUser(supabaseUser: SupabaseUser): Promise<User> {
+  const profile = await fetchProfile(supabaseUser.id);
+  return {
+    name: profile?.full_name
+      ?? supabaseUser.user_metadata?.full_name
+      ?? supabaseUser.email?.split('@')[0]
+      ?? '',
+    email: supabaseUser.email ?? '',
+  };
+}
+
 export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -38,21 +51,13 @@ export default function App() {
 
   // Restore session on mount and subscribe to auth state changes
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser({
-          name: session.user.user_metadata?.full_name ?? session.user.email?.split('@')[0] ?? '',
-          email: session.user.email ?? '',
-        });
-      }
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) setUser(await resolveUser(session.user));
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser({
-          name: session.user.user_metadata?.full_name ?? session.user.email?.split('@')[0] ?? '',
-          email: session.user.email ?? '',
-        });
+        setUser(await resolveUser(session.user));
       } else {
         setUser(null);
       }
