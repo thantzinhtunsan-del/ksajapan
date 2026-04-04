@@ -19,6 +19,8 @@ function mapSupabaseError(message: string): string {
   if (message.includes('Email not confirmed')) return 'Please confirm your email before signing in.';
   if (message.includes('User already registered')) return 'An account with this email already exists.';
   if (message.includes('Password should be')) return 'Password must be at least 6 characters.';
+  if (message.includes('Invalid API key') || message.includes('apikey')) return 'Authentication service is not configured. Please contact support.';
+  if (message.includes('Failed to fetch') || message.includes('NetworkError')) return 'Network error. Please check your connection and try again.';
   return message;
 }
 
