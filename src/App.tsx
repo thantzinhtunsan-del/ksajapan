@@ -32,15 +32,15 @@ const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boole
   { id: 'admin',      label: 'Admin',      icon: Shield, adminOnly: true },
 ];
 
-// Handle /reset-password route without a router
-if (window.location.pathname === '/reset-password') {
-  return <ResetPassword />;
-}
-
 export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('vocab');
+
+  // Handle /reset-password route without a router
+  if (window.location.pathname === '/reset-password') {
+    return <ResetPassword />;
+  }
 
   // Restore session on mount and subscribe to auth state changes
   useEffect(() => {
