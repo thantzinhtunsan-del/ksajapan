@@ -8,6 +8,7 @@ import ExamHacks from './components/ExamHacks';
 import MockTest from './components/MockTest';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
+import ResetPassword from './components/ResetPassword';
 import { supabase } from './lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck, Shield } from 'lucide-react';
@@ -30,6 +31,11 @@ const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boole
   { id: 'mocktest',   label: 'Mock Test',  icon: ClipboardCheck },
   { id: 'admin',      label: 'Admin',      icon: Shield, adminOnly: true },
 ];
+
+// Handle /reset-password route without a router
+if (window.location.pathname === '/reset-password') {
+  return <ResetPassword />;
+}
 
 export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
