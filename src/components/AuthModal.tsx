@@ -187,11 +187,24 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
                       <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Demo Mode</span>
                     </div>
                     <p className="text-xs text-amber-300/80 leading-relaxed">
-                      Supabase is not configured. Use the pre-seeded admin account or sign up with any email.
+                      No Supabase configured — use the pre-seeded admin account.
                     </p>
-                    <div className="mt-2 text-xs text-amber-400/70 font-mono space-y-0.5">
-                      <div>Email: <span className="text-amber-300">admin@ksajapan.com</span></div>
-                      <div>Password: <span className="text-amber-300">admin123</span></div>
+                    <div className="mt-2 flex items-center justify-between gap-3">
+                      <div className="text-xs text-amber-400/70 font-mono space-y-0.5">
+                        <div>Email: <span className="text-amber-300">admin@ksajapan.com</span></div>
+                        <div>Password: <span className="text-amber-300">admin123</span></div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMode('signin');
+                          setForm({ name: '', email: 'admin@ksajapan.com', password: 'admin123' });
+                          setError('');
+                        }}
+                        className="shrink-0 text-xs font-bold bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Use this account
+                      </button>
                     </div>
                   </div>
                 )}
