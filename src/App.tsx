@@ -8,7 +8,7 @@ import ExamHacks from './components/ExamHacks';
 import MockTest from './components/MockTest';
 import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
-import { supabase, fetchProfile } from './lib/supabase';
+import { supabase, fetchProfile, DEMO_MODE } from './lib/supabase';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'motion/react';
 import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck, Shield } from 'lucide-react';
@@ -52,6 +52,9 @@ export default function App() {
 
   // Restore session on mount and subscribe to auth state changes
   useEffect(() => {
+    // In demo mode there is no Supabase session to restore.
+    if (DEMO_MODE) { setAuthLoading(false); return; }
+
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) setUser(await resolveUser(session.user));
       setAuthLoading(false);
@@ -77,7 +80,7 @@ export default function App() {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    if (!DEMO_MODE) await supabase.auth.signOut();
     setUser(null);
     setActiveTab('vocab');
   };
