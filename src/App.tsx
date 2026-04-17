@@ -6,29 +6,24 @@ import Flashcards from './components/Flashcards';
 import Mindmap from './components/Mindmap';
 import ExamHacks from './components/ExamHacks';
 import MockTest from './components/MockTest';
-import AdminPanel from './components/AdminPanel';
 import AuthModal from './components/AuthModal';
 import { supabase } from './lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
-import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck, Shield } from 'lucide-react';
+import { BookOpen, GraduationCap, Map, Zap, ClipboardCheck } from 'lucide-react';
 
 interface User {
   name: string;
   email: string;
 }
 
-// Admin emails — add your admin emails here
-const ADMIN_EMAILS = ['admin@ksajapan.com', 'admin@ksa.com'];
+type Tab = 'vocab' | 'flashcards' | 'mindmap' | 'examhacks' | 'mocktest';
 
-type Tab = 'vocab' | 'flashcards' | 'mindmap' | 'examhacks' | 'mocktest' | 'admin';
-
-const TABS: { id: Tab; label: string; icon: React.ElementType; adminOnly?: boolean }[] = [
+const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'vocab',      label: 'Vocab',      icon: BookOpen },
   { id: 'flashcards', label: 'Flashcards', icon: GraduationCap },
   { id: 'mindmap',    label: 'Mindmap',    icon: Map },
   { id: 'examhacks',  label: 'Exam Hacks', icon: Zap },
   { id: 'mocktest',   label: 'Mock Test',  icon: ClipboardCheck },
-  { id: 'admin',      label: 'Admin',      icon: Shield, adminOnly: true },
 ];
 
 export default function App() {
@@ -36,7 +31,6 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('vocab');
 
-  // Restore session on mount and subscribe to auth state changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
@@ -61,8 +55,6 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isAdmin = user ? ADMIN_EMAILS.includes(user.email.toLowerCase()) : false;
-
   const handleAuthSuccess = (userData: User) => {
     setUser(userData);
     setShowAuthModal(false);
@@ -75,8 +67,6 @@ export default function App() {
     setActiveTab('vocab');
   };
 
-  const visibleTabs = TABS.filter((tab) => !tab.adminOnly || isAdmin);
-
   return (
     <div className="min-h-screen bg-matte-black selection:bg-metallic-gold/30">
       <Navbar user={user} onSignIn={() => setShowAuthModal(true)} onSignOut={handleSignOut} />
@@ -88,7 +78,7 @@ export default function App() {
             <div className="sticky top-20 z-40 bg-matte-black/90 backdrop-blur-md border-b border-metallic-gold/10">
               <div className="max-w-7xl mx-auto px-4">
                 <div className="flex overflow-x-auto scrollbar-hide gap-1 py-2">
-                  {visibleTabs.map((tab) => {
+                  {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
                     return (
@@ -124,7 +114,6 @@ export default function App() {
                 {activeTab === 'mindmap'    && <Mindmap />}
                 {activeTab === 'examhacks'  && <ExamHacks />}
                 {activeTab === 'mocktest'   && <MockTest />}
-                {activeTab === 'admin' && isAdmin && <AdminPanel />}
               </motion.div>
             </AnimatePresence>
           </>
