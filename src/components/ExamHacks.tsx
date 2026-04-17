@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, Zap, Target, Brain, Clock, MessageSquare, Lightbulb } from 'lucide-react';
 
-const SUBJECTS = [
+export const SUBJECTS = [
   '人間の尊厳と自立',
   '社会の理解',
   '介護の基本',
@@ -17,7 +17,7 @@ const SUBJECTS = [
   '総合問題',
 ];
 
-interface SubjectData {
+export interface SubjectData {
   coreIdea: string;
   highYield: string[];
   traps: string[];
@@ -27,7 +27,7 @@ interface SubjectData {
   sigmaMessage: string;
 }
 
-const SUBJECT_DATA: Record<string, SubjectData> = {
+export const SUBJECT_DATA: Record<string, SubjectData> = {
   '人間の尊厳と自立': {
     coreIdea: `介護の「一番大切なルール」を学ぶ科目。問題数は少ないが、ここを間違えると他の科目も解けなくなる。
 ကူညီစောင့်ရှောက်ရေး (Kaigo) ရဲ့ အခြေခံအကျဆုံး "စည်းမျဉ်း" ကို လေ့လာရမည့် ဘာသာရပ်ဖြစ်သည်။ မေးခွန်းအရေအတွက် နည်းသော်လည်း ဤအပိုင်းကို နားမလည်ပါက အခြားဘာသာရပ်များတွင်ပါ အမှားမှားအယွင်းယွင်း ဖြစ်စေနိုင်သည်။
