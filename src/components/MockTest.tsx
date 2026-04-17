@@ -1,23 +1,27 @@
 /**
- * MockTest.tsx — updated
- * Mode selection: Subject Practice | AM Exam | PM Exam | Full Exam
+ * MockTest.tsx
+ * Mode selection: 科目別練習 | 回別試験 (第31回〜第38回)
  * Pass system: overall ≥ 60% AND no subject with 0 correct.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase';
+import PAST_QUESTIONS_JSON from '../data/pastQuestions.json';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ClipboardCheck, Timer, ArrowRight, CheckCircle2, XCircle,
-  Sparkles, RefreshCcw, BookOpen, Sun, Moon, GraduationCap,
+  Sparkles, RefreshCcw, BookOpen, GraduationCap,
   ChevronLeft, AlertTriangle,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Mode = 'subject' | 'am' | 'pm' | 'full';
+type Mode = 'subject' | 'kai';
+type Period = 'am' | 'pm' | 'both';
 
 interface Question {
   id: string;
+  kai: string;
   subject: string;
   period: 'am' | 'pm';
   question: string;
@@ -26,185 +30,30 @@ interface Question {
   explanation: string;
 }
 
-// ─── Question Bank ─────────────────────────────────────────────────────────────
-// Replace / extend this array with your full question set.
-// Fields: subject, period ('am' | 'pm'), question, options[4], correctAnswer (0-based), explanation
+// ─── Question Bank (681 past exam questions from 第31回～第38回) ────────────────
+const ALL_QUESTIONS: Question[] = PAST_QUESTIONS_JSON as Question[];
 
-const ALL_QUESTIONS: Question[] = [
-  // ── AM subjects ──────────────────────────────────────────────────
-  {
-    id: 'am-01',
-    subject: '人間の尊厳と自立',
-    period: 'am',
-    question: '介護の基本理念として最も適切なものはどれですか？',
-    options: ['効率を最優先にする', '利用者の自己決定を尊重する', '介護者が全てを決定する', '家族の意向を最優先にする'],
-    correctAnswer: 1,
-    explanation: '介護の基本は利用者の尊厳を守り、自己決定を尊重・支援することです。',
-  },
-  {
-    id: 'am-02',
-    subject: '人間関係とコミュニケーション',
-    period: 'am',
-    question: 'バイステックの7原則のうち「意図的な感情の表出」が意味するものはどれですか？',
-    options: [
-      '介護者が感情を表現すること',
-      '利用者が感情を自由に表現できるよう支援すること',
-      '感情を抑制すること',
-      '家族に感情を伝えること',
-    ],
-    correctAnswer: 1,
-    explanation: '「意図的な感情の表出」とは、利用者が否定的な感情も含めて自由に表現できるよう意図的に援助することです。',
-  },
-  {
-    id: 'am-03',
-    subject: '社会の理解',
-    period: 'am',
-    question: '介護保険制度において、保険者は誰ですか？',
-    options: ['都道府県', '市町村・特別区', '国', '厚生労働省'],
-    correctAnswer: 1,
-    explanation: '介護保険の保険者は原則として市町村（および特別区）です。国と都道府県は財政支援を行います。',
-  },
-  {
-    id: 'am-04',
-    subject: '介護の基本',
-    period: 'am',
-    question: 'ICF（国際生活機能分類）の構成要素に含まれないものはどれですか？',
-    options: ['心身機能・身体構造', '活動', 'QOL（生活の質）', '参加'],
-    correctAnswer: 2,
-    explanation: 'ICFの構成要素は「心身機能・身体構造」「活動」「参加」「環境因子」「個人因子」です。QOLはICFの構成要素ではありません。',
-  },
-  {
-    id: 'am-05',
-    subject: 'コミュニケーション技術',
-    period: 'am',
-    question: '傾聴の技法として正しいものはどれですか？',
-    options: ['解決策をすぐに提案する', '相手の言葉を否定する', '相手の感情を反映させて返す', '自分の意見を積極的に述べる'],
-    correctAnswer: 2,
-    explanation: '傾聴では相手の感情を受け止め、共感的に返すこと（感情の反映）が重要です。',
-  },
-  {
-    id: 'am-06',
-    subject: '人間の尊厳と自立',
-    period: 'am',
-    question: '「ノーマライゼーション」の理念として最も適切なものはどれですか？',
-    options: [
-      '障害者を施設に隔離して保護する',
-      '障害のある人も地域で普通の生活を送れるようにする',
-      '障害者と健常者を区別して支援する',
-      '家族だけで障害者を支援する',
-    ],
-    correctAnswer: 1,
-    explanation: 'ノーマライゼーションとは、障害のある人もない人も同様に地域社会で普通の生活を営めるようにするという理念です。',
-  },
-  {
-    id: 'am-07',
-    subject: '社会の理解',
-    period: 'am',
-    question: '地域包括支援センターの設置主体はどれですか？',
-    options: ['国', '都道府県', '市町村', '社会福祉法人'],
-    correctAnswer: 2,
-    explanation: '地域包括支援センターは市町村が設置します。高齢者の総合相談・権利擁護・ケアマネジメント支援を行います。',
-  },
-  {
-    id: 'am-08',
-    subject: '介護の基本',
-    period: 'am',
-    question: 'ADL（日常生活動作）に含まれないものはどれですか？',
-    options: ['食事', '入浴', '料理', '排泄'],
-    correctAnswer: 2,
-    explanation: 'ADLは食事・入浴・排泄・移動などの基本動作です。「料理」はIADL（手段的日常生活動作）に分類されます。',
-  },
-
-  // ── PM subjects ──────────────────────────────────────────────────
-  {
-    id: 'pm-01',
-    subject: '生活支援技術',
-    period: 'pm',
-    question: '片麻痺のある利用者の更衣介助で正しいものはどれですか？',
-    options: ['健側から脱いで患側から着る', '患側から脱いで健側から着る', '健側から脱いで健側から着る', '患側から脱いで患側から着る'],
-    correctAnswer: 0,
-    explanation: '更衣介助の原則は「脱健着患」——脱ぐときは健側から、着るときは患側から行います。',
-  },
-  {
-    id: 'pm-02',
-    subject: '介護過程',
-    period: 'pm',
-    question: '介護過程の展開として正しい順序はどれですか？',
-    options: [
-      '計画→アセスメント→実施→評価',
-      'アセスメント→計画→実施→評価',
-      '実施→アセスメント→計画→評価',
-      '評価→計画→実施→アセスメント',
-    ],
-    correctAnswer: 1,
-    explanation: '介護過程はアセスメント→計画立案→実施→評価のPDCAサイクルで展開します。',
-  },
-  {
-    id: 'pm-03',
-    subject: '発達と老化の理解',
-    period: 'pm',
-    question: 'エリクソンの発達理論において老年期の課題はどれですか？',
-    options: ['自我同一性の確立', '親密性の獲得', '自我の統合 vs 絶望', '生殖性の獲得'],
-    correctAnswer: 2,
-    explanation: 'エリクソンは老年期の発達課題を「自我の統合（対）絶望」としています。人生を振り返り意味を見出すことが課題です。',
-  },
-  {
-    id: 'pm-04',
-    subject: '認知症の理解',
-    period: 'pm',
-    question: '認知症の中核症状に含まれるものはどれですか？',
-    options: ['幻覚', '記憶障害', 'うつ状態', '徘徊'],
-    correctAnswer: 1,
-    explanation: '記憶障害は認知症の中核症状です。幻覚・うつ・徘徊は周辺症状（BPSD）に分類されます。',
-  },
-  {
-    id: 'pm-05',
-    subject: '障害の理解',
-    period: 'pm',
-    question: '聴覚障害者とのコミュニケーション方法として適切でないものはどれですか？',
-    options: ['手話', '口話（読唇術）', '筆談', '大声でゆっくり話す'],
-    correctAnswer: 3,
-    explanation: '大声で話しても聴覚障害者には伝わりません。手話・口話・筆談・補聴器の活用が適切です。',
-  },
-  {
-    id: 'pm-06',
-    subject: 'こころとからだのしくみ',
-    period: 'pm',
-    question: 'マズローの欲求の階層で最上位に位置するものはどれですか？',
-    options: ['安全の欲求', '所属と愛の欲求', '自己実現の欲求', '承認の欲求'],
-    correctAnswer: 2,
-    explanation: 'マズローの欲求階層の最上位は「自己実現の欲求」です。生理的欲求→安全→所属→承認→自己実現の順です。',
-  },
-  {
-    id: 'pm-07',
-    subject: '医療的ケア',
-    period: 'pm',
-    question: '経管栄養を実施する際、介護福祉士が行える行為はどれですか？',
-    options: ['胃ろうチューブの交換', '栄養剤の注入速度の調整（医師指示範囲内）', '栄養剤の注入', '経鼻胃管の挿入'],
-    correctAnswer: 2,
-    explanation: '一定の研修を修了した介護福祉士は、医師の指示のもと経管栄養（栄養剤の注入）を行えます。チューブの交換・挿入は医師・看護師の業務です。',
-  },
-  {
-    id: 'pm-08',
-    subject: '総合問題',
-    period: 'pm',
-    question: '利用者の「尊厳の保持」に基づく介護として最も適切なものはどれですか？',
-    options: [
-      '利用者の意思より効率を優先する',
-      '利用者が選択・決定できるよう支援する',
-      '介護者の判断でケアを進める',
-      '家族の要望を最優先にする',
-    ],
-    correctAnswer: 1,
-    explanation: '尊厳の保持とは利用者一人ひとりの個性・価値観・自己決定を尊重することです。',
-  },
-];
+// ─── Available rounds ─────────────────────────────────────────────────────────
+const ALL_KAI = ['第31回', '第32回', '第33回', '第34回', '第35回', '第36回', '第37回', '第38回'];
 
 // ─── Subject list (13 subjects) ───────────────────────────────────────────────
-
-const AM_SUBJECTS = ['人間の尊厳と自立', '人間関係とコミュニケーション', '社会の理解', '介護の基本', 'コミュニケーション技術'];
-const PM_SUBJECTS = ['生活支援技術', '介護過程', '発達と老化の理解', '認知症の理解', '障害の理解', 'こころとからだのしくみ', '医療的ケア', '総合問題'];
+// 午前 8科目（63問 / 100分）
+const AM_SUBJECTS = [
+  '人間の尊厳と自立', '人間関係とコミュニケーション', '社会の理解',
+  'こころとからだのしくみ', '発達と老化の理解', '認知症の理解', '障害の理解', '医療的ケア',
+];
+// 午後 5科目（62問 / 120分）
+const PM_SUBJECTS = [
+  '介護の基本', 'コミュニケーション技術', '生活支援技術', '介護過程', '総合問題',
+];
 const ALL_SUBJECTS = [...AM_SUBJECTS, ...PM_SUBJECTS];
+
+// Round to year label
+const KAI_YEAR: Record<string, string> = {
+  '第31回': '平成30年度', '第32回': '令和元年度', '第33回': '令和2年度',
+  '第34回': '令和3年度', '第35回': '令和4年度', '第36回': '令和5年度',
+  '第37回': '令和6年度', '第38回': '令和7年度',
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -212,13 +61,16 @@ function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
 
-function buildQuestions(mode: Mode, selectedSubjects: string[]): Question[] {
+function buildQuestions(mode: Mode, selectedSubjects: string[], selectedKai: string, period: Period, bank: Question[]): Question[] {
   if (mode === 'subject') {
-    return shuffle(ALL_QUESTIONS.filter(q => selectedSubjects.includes(q.subject)));
+    return shuffle(bank.filter(q => selectedSubjects.includes(q.subject)));
   }
-  if (mode === 'am') return shuffle(ALL_QUESTIONS.filter(q => q.period === 'am'));
-  if (mode === 'pm') return shuffle(ALL_QUESTIONS.filter(q => q.period === 'pm'));
-  return shuffle(ALL_QUESTIONS); // full
+  // kai mode: filter by round and period, preserve original order (no shuffle)
+  return bank.filter(q => {
+    if (q.kai !== selectedKai) return false;
+    if (period === 'both') return true;
+    return q.period === period;
+  });
 }
 
 function formatTime(seconds: number) {
@@ -233,7 +85,6 @@ function calcPassFail(questions: Question[], answers: (number | null)[]) {
   const total = questions.length;
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
 
-  // per-subject breakdown
   const subjectMap: Record<string, { correct: number; total: number }> = {};
   questions.forEach((q, i) => {
     if (!subjectMap[q.subject]) subjectMap[q.subject] = { correct: 0, total: 0 };
@@ -289,22 +140,29 @@ function ModeCard({
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function MockTest() {
-  // Screen state
-  type Screen = 'home' | 'subject-select' | 'exam' | 'results';
+  type Screen = 'home' | 'subject-select' | 'kai-select' | 'kai-period-select' | 'exam' | 'results';
   const [screen, setScreen] = useState<Screen>('home');
   const [activeMode, setActiveMode] = useState<Mode>('subject');
+  const questionBank = useRef<Question[]>(ALL_QUESTIONS);
 
-  // Subject selection
+  useEffect(() => {
+    supabase.from('questions').select('*').order('created_at').then(({ data }) => {
+      if (data && data.length > 0) {
+        questionBank.current = data.map(q => ({ ...q, correctAnswer: q.correct_answer }));
+      }
+    });
+  }, []);
+
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedKai, setSelectedKai] = useState<string>('');
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>('both');
 
-  // Exam state
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState(0);
 
-  // Results
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
   const [isLoadingFeedback, setIsLoadingFeedback] = useState(false);
 
@@ -327,18 +185,21 @@ export default function MockTest() {
       setSelectedSubjects([]);
       setScreen('subject-select');
     } else {
-      launchExam(mode, []);
+      setScreen('kai-select');
     }
   }
 
-  function launchExam(mode: Mode, subjects: string[]) {
-    const qs = buildQuestions(mode, subjects);
+  function launchExam(mode: Mode, subjects: string[], kai: string, period: Period = 'both') {
+    const qs = buildQuestions(mode, subjects, kai, period, questionBank.current);
     if (!qs.length) return;
     setQuestions(qs);
     setCurrentIndex(0);
     setAnswers(new Array(qs.length).fill(null));
     setSelectedAnswer(null);
-    const seconds = mode === 'full' ? 120 * 60 : mode === 'am' || mode === 'pm' ? 60 * 60 : Math.max(qs.length * 90, 300);
+    // Kai mode: AM=100min, PM=120min, both=220min; subject practice ~90s/q
+    const seconds = mode === 'kai'
+      ? (period === 'am' ? 100 : period === 'pm' ? 120 : 220) * 60
+      : Math.max(qs.length * 90, 300);
     setTimeLeft(seconds);
     setAiFeedback(null);
     setScreen('exam');
@@ -387,30 +248,30 @@ export default function MockTest() {
   function restart() {
     setScreen('home');
     setSelectedSubjects([]);
+    setSelectedKai('');
+    setSelectedPeriod('both');
     setQuestions([]);
     setAnswers([]);
     setSelectedAnswer(null);
     setAiFeedback(null);
   }
 
-  // ── Results calc ──────────────────────────────────────────────────
   const result = screen === 'results' ? calcPassFail(questions, answers) : null;
 
-  // ── Subject select toggle ─────────────────────────────────────────
   function toggleSubject(s: string) {
     setSelectedSubjects(prev =>
       prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]
     );
   }
 
-  // ─── Render ───────────────────────────────────────────────────────
+  // Count questions per kai for display
+  const kaiCounts: Record<string, number> = {};
+  ALL_QUESTIONS.forEach(q => {
+    kaiCounts[q.kai] = (kaiCounts[q.kai] ?? 0) + 1;
+  });
 
-  const modeLabel: Record<Mode, string> = {
-    subject: '科目練習',
-    am: '午前 (AM)',
-    pm: '午後 (PM)',
-    full: '本試験',
-  };
+  const periodLabel = selectedPeriod === 'am' ? '午前' : selectedPeriod === 'pm' ? '午後' : '全問';
+  const modeLabel = activeMode === 'subject' ? '科目練習' : selectedKai ? `${selectedKai} ${periodLabel}` : '回別試験';
 
   return (
     <section id="mocktest" className="py-24 bg-matte-black/50 border-t border-metallic-gold/10">
@@ -428,7 +289,7 @@ export default function MockTest() {
 
         <AnimatePresence mode="wait">
 
-          {/* ── HOME: mode selection ──────────────────────────────── */}
+          {/* ── HOME ─────────────────────────────────────────────── */}
           {screen === 'home' && (
             <motion.div key="home" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -16 }}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -440,31 +301,104 @@ export default function MockTest() {
                   onClick={() => pickMode('subject')}
                 />
                 <ModeCard
-                  icon={<Sun size={24} />}
-                  title="午前試験 (AM)"
-                  subtitle="午前の出題科目をまとめて模擬受験。時間を計って本番に備える。"
-                  tag="AM Exam"
-                  onClick={() => pickMode('am')}
-                />
-                <ModeCard
-                  icon={<Moon size={24} />}
-                  title="午後試験 (PM)"
-                  subtitle="午後の出題科目を集中的に模擬受験。解説付きで理解を深める。"
-                  tag="PM Exam"
-                  onClick={() => pickMode('pm')}
-                />
-                <ModeCard
                   icon={<GraduationCap size={24} />}
-                  title="本試験モード (Full)"
-                  subtitle="午前＋午後の全科目を通し受験。合否判定付きの完全シミュレーション。"
-                  tag="🔥 Full Exam"
-                  onClick={() => pickMode('full')}
+                  title="回別試験"
+                  subtitle="第31回〜第38回から受けたい年度を選んで本番形式で挑戦。"
+                  tag="Past Exam"
+                  onClick={() => pickMode('kai')}
                 />
               </div>
 
               <p className="text-center text-xs text-gray-600 mt-8 uppercase tracking-widest">
                 合格条件: 総合正解率 60%以上 かつ 各科目で1問以上正解
               </p>
+            </motion.div>
+          )}
+
+          {/* ── KAI SELECT ───────────────────────────────────────── */}
+          {screen === 'kai-select' && (
+            <motion.div key="kai-select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <button onClick={() => setScreen('home')} className="flex items-center gap-2 text-metallic-gold hover:text-white transition-colors mb-8 text-sm font-bold">
+                <ChevronLeft size={16} /> モード選択に戻る
+              </button>
+
+              <div className="bg-white/5 border border-metallic-gold/20 rounded-3xl p-8">
+                <h3 className="text-xl font-bold text-white mb-2">受験回を選択してください</h3>
+                <p className="text-gray-500 text-sm mb-8">第31回〜第38回の介護福祉士国家試験過去問から選べます。</p>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {ALL_KAI.map(kai => {
+                    const count = kaiCounts[kai] ?? 0;
+                    const year = KAI_YEAR[kai] ?? '';
+                    return (
+                      <motion.button
+                        key={kai}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                          setSelectedKai(kai);
+                          setScreen('kai-period-select');
+                        }}
+                        className="group bg-white/5 border border-metallic-gold/20 rounded-2xl p-5 text-center hover:border-metallic-gold hover:bg-white/10 transition-all"
+                      >
+                        <div className="text-xl font-bold text-white mb-1">{kai}</div>
+                        <div className="text-xs text-gray-500 mb-3">{year}</div>
+                        <div className="text-xs font-bold text-metallic-gold/60 group-hover:text-metallic-gold transition-colors">
+                          {count}問
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── KAI PERIOD SELECT ────────────────────────────────── */}
+          {screen === 'kai-period-select' && selectedKai && (
+            <motion.div key="kai-period-select" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+              <button onClick={() => setScreen('kai-select')} className="flex items-center gap-2 text-metallic-gold hover:text-white transition-colors mb-8 text-sm font-bold">
+                <ChevronLeft size={16} /> 年度選択に戻る
+              </button>
+
+              <div className="bg-white/5 border border-metallic-gold/20 rounded-3xl p-8">
+                <h3 className="text-xl font-bold text-white mb-1">{selectedKai} — 受験区分を選択</h3>
+                <p className="text-gray-500 text-sm mb-8">{KAI_YEAR[selectedKai]} の午前・午後・両方から選んでください。</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  {(
+                    [
+                      { period: 'am' as Period, label: '午前', labelEn: 'AM', time: '100分', desc: '人間の尊厳・社会の理解・こころとからだ・認知症・障害・医療的ケア など（8科目）' },
+                      { period: 'pm' as Period, label: '午後', labelEn: 'PM', time: '120分', desc: '介護の基本・コミュニケーション・生活支援・介護過程・総合問題（5科目）' },
+                      { period: 'both' as Period, label: '全問', labelEn: 'AM + PM', time: '220分', desc: '午前・午後すべての問題を通して挑戦（13科目）' },
+                    ] as { period: Period; label: string; labelEn: string; time: string; desc: string }[]
+                  ).map(({ period, label, labelEn, time, desc }) => {
+                    const count = ALL_QUESTIONS.filter(q => q.kai === selectedKai && (period === 'both' || q.period === period)).length;
+                    return (
+                      <motion.button
+                        key={period}
+                        whileHover={{ y: -2 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                          setSelectedPeriod(period);
+                          launchExam('kai', [], selectedKai, period);
+                        }}
+                        className="group bg-white/5 border border-metallic-gold/20 rounded-2xl p-6 text-left flex flex-col gap-3 hover:border-metallic-gold hover:bg-white/10 transition-all"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-2xl font-bold text-white">{label}</span>
+                          <span className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60 bg-metallic-gold/10 px-2 py-0.5 rounded-full">{labelEn}</span>
+                        </div>
+                        <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+                        <div className="mt-auto flex items-center justify-between text-xs font-bold text-metallic-gold/60 group-hover:text-metallic-gold transition-colors">
+                          <span>{count}問</span>
+                          <span>{time}</span>
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </div>
             </motion.div>
           )}
 
@@ -532,7 +466,7 @@ export default function MockTest() {
                   </button>
                   <div className="ml-auto">
                     <button
-                      onClick={() => launchExam('subject', selectedSubjects)}
+                      onClick={() => launchExam('subject', selectedSubjects, '')}
                       disabled={selectedSubjects.length === 0}
                       className="gold-button gold-glow-hover disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                     >
@@ -550,7 +484,7 @@ export default function MockTest() {
               {/* Header bar */}
               <div className="flex items-center justify-between bg-white/5 px-5 py-3 rounded-2xl border border-white/5 mb-6">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60">{modeLabel[activeMode]}</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60">{modeLabel}</span>
                   <span className="text-sm font-bold text-gray-500">
                     問題 <span className="text-metallic-gold">{currentIndex + 1}</span> / {questions.length}
                   </span>
@@ -729,7 +663,7 @@ export default function MockTest() {
               {/* Actions */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={() => launchExam(activeMode, selectedSubjects)}
+                  onClick={() => launchExam(activeMode, selectedSubjects, selectedKai, selectedPeriod)}
                   className="flex-1 py-4 rounded-full border border-metallic-gold/30 text-metallic-gold font-bold hover:bg-metallic-gold/5 transition-all flex items-center justify-center gap-2 gold-glow-hover"
                 >
                   <RefreshCcw size={16} /> 同じモードで再挑戦
