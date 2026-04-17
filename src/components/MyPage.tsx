@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { User, Mail, Calendar, Crown, Zap, Globe } from 'lucide-react';
+import { User, Mail, Calendar, Crown, Zap, Globe, Shield } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useLanguage } from '../contexts/LanguageContext';
 import { LANGUAGE_NAMES, LANGUAGE_FLAGS, type Language } from '../i18n/translations';
+
+const ADMIN_EMAILS = ['admin@ksajapan.com', 'admin@ksa.com'];
 
 interface UserProfile {
   email: string;
@@ -14,10 +16,12 @@ interface UserProfile {
 
 interface MyPageProps {
   user: { name: string; email: string };
+  onNavigateAdmin?: () => void;
 }
 
-export default function MyPage({ user }: MyPageProps) {
+export default function MyPage({ user, onNavigateAdmin }: MyPageProps) {
   const { t, lang, setLang } = useLanguage();
+  const isAdmin = ADMIN_EMAILS.includes(user.email.toLowerCase());
   const [profile, setProfile] = useState<UserProfile>({
     email: user.email,
     name: user.name,
@@ -36,7 +40,7 @@ export default function MyPage({ user }: MyPageProps) {
         .select('plan, created_at')
         .eq('id', authUser.id)
         .single()
-        .then(({ data }) => {
+        .then(({ data, error: _ }) => {
           setProfile({
             email: authUser.email ?? '',
             name: authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? '',
@@ -136,6 +140,19 @@ export default function MyPage({ user }: MyPageProps) {
           ※ UIの表示言語が変わります。科目名・内容は日本語のままです。
         </p>
       </Card>
+
+      {/* Admin card — only visible to admin emails */}
+      {isAdmin && onNavigateAdmin && (
+        <Card title="管理者" delay={0.2}>
+          <button
+            onClick={onNavigateAdmin}
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 hover:border-metallic-gold/30 hover:bg-white/8 transition-all text-left"
+          >
+            <Shield size={18} className="text-metallic-gold shrink-0" />
+            <span className="text-sm font-semibold text-white">Admin Panel</span>
+          </button>
+        </Card>
+      )}
     </div>
   );
 }

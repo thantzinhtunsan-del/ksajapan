@@ -198,8 +198,8 @@ function TextbookTab({
       .select('*')
       .eq('subject', subject)
       .order('display_order')
-      .then(({ data }) => {
-        setDocs((data as PdfDoc[]) ?? []);
+      .then(({ data, error }) => {
+        if (!error) setDocs((data as PdfDoc[]) ?? []);
         setLoading(false);
       });
   }, [subject]);
@@ -398,8 +398,8 @@ function VocabularyTab({ subject, lang }: { subject: string; lang: string }) {
         ? supabase.from('vocabulary').select('*').in('category', categories)
         : supabase.from('vocabulary').select('*');
 
-    query.then(({ data }) => {
-      setItems((data as VocabItem[]) ?? []);
+    query.then(({ data, error }) => {
+      if (!error) setItems((data as VocabItem[]) ?? []);
       setLoading(false);
     });
   }, [subject]);

@@ -146,7 +146,12 @@ export default function App() {
               {activePage === 'help' && <HelpPage />}
 
               {/* My Page */}
-              {activePage === 'mypage' && user && <MyPage user={user} />}
+              {activePage === 'mypage' && user && (
+                <MyPage
+                  user={user}
+                  onNavigateAdmin={isAdmin ? () => setActivePage('admin') : undefined}
+                />
+              )}
 
               {/* Admin */}
               {activePage === 'admin' && isAdmin && <AdminPanel />}
