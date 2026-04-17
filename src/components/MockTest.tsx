@@ -48,6 +48,23 @@ const PM_SUBJECTS = [
 ];
 const ALL_SUBJECTS = [...AM_SUBJECTS, ...PM_SUBJECTS];
 
+// Official question count per subject (national exam standard)
+const SUBJECT_Q_COUNT: Record<string, number> = {
+  '人間の尊厳と自立': 2,
+  '人間関係とコミュニケーション': 2,
+  '社会の理解': 12,
+  'こころとからだのしくみ': 12,
+  '発達と老化の理解': 8,
+  '認知症の理解': 10,
+  '障害の理解': 10,
+  '医療的ケア': 7,
+  '介護の基本': 10,
+  'コミュニケーション技術': 8,
+  '生活支援技術': 20,
+  '介護過程': 12,
+  '総合問題': 12,
+};
+
 // Round to year label
 const KAI_YEAR: Record<string, string> = {
   '第31回': '平成30年度', '第32回': '令和元年度', '第33回': '令和2年度',
@@ -411,43 +428,57 @@ export default function MockTest() {
 
               <div className="bg-white/5 border border-metallic-gold/20 rounded-3xl p-8">
                 <h3 className="text-xl font-bold text-white mb-2">科目を選択してください</h3>
-                <p className="text-gray-500 text-sm mb-8">1科目以上選択してスタート。複数選択可。</p>
+                <p className="text-gray-500 text-sm mb-8">1科目以上選択してスタート。複数選択可。全125問（午前63問 + 午後62問）</p>
 
                 <div className="mb-6">
-                  <p className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60 mb-3">午前科目</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60 mb-1">午前科目</p>
+                  <p className="text-xs text-gray-600 mb-3">8科目 · 63問 · 100分</p>
                   <div className="flex flex-wrap gap-2">
-                    {AM_SUBJECTS.map(s => (
-                      <button
-                        key={s}
-                        onClick={() => toggleSubject(s)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-                          selectedSubjects.includes(s)
-                            ? 'bg-metallic-gold text-matte-black border-metallic-gold'
-                            : 'bg-white/5 text-gray-400 border-white/10 hover:border-metallic-gold/40'
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                    {AM_SUBJECTS.map(s => {
+                      const selected = selectedSubjects.includes(s);
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => toggleSubject(s)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                            selected
+                              ? 'bg-metallic-gold text-matte-black border-metallic-gold'
+                              : 'bg-white/5 text-gray-400 border-white/10 hover:border-metallic-gold/40'
+                          }`}
+                        >
+                          {s}
+                          <span className={`text-xs font-bold ${selected ? 'text-matte-black/60' : 'text-gray-600'}`}>
+                            {SUBJECT_Q_COUNT[s]}問
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
                 <div className="mb-8">
-                  <p className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60 mb-3">午後科目</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-metallic-gold/60 mb-1">午後科目</p>
+                  <p className="text-xs text-gray-600 mb-3">5科目 · 62問 · 120分</p>
                   <div className="flex flex-wrap gap-2">
-                    {PM_SUBJECTS.map(s => (
-                      <button
-                        key={s}
-                        onClick={() => toggleSubject(s)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-                          selectedSubjects.includes(s)
-                            ? 'bg-metallic-gold text-matte-black border-metallic-gold'
-                            : 'bg-white/5 text-gray-400 border-white/10 hover:border-metallic-gold/40'
-                        }`}
-                      >
-                        {s}
-                      </button>
-                    ))}
+                    {PM_SUBJECTS.map(s => {
+                      const selected = selectedSubjects.includes(s);
+                      return (
+                        <button
+                          key={s}
+                          onClick={() => toggleSubject(s)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${
+                            selected
+                              ? 'bg-metallic-gold text-matte-black border-metallic-gold'
+                              : 'bg-white/5 text-gray-400 border-white/10 hover:border-metallic-gold/40'
+                          }`}
+                        >
+                          {s}
+                          <span className={`text-xs font-bold ${selected ? 'text-matte-black/60' : 'text-gray-600'}`}>
+                            {SUBJECT_Q_COUNT[s]}問
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
