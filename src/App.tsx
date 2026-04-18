@@ -85,7 +85,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-matte-black selection:bg-metallic-gold/30">
-      <Navbar user={user} onSignIn={() => setShowAuthModal(true)} onSignOut={handleSignOut} />
+      <Navbar
+        user={user}
+        onSignIn={() => setShowAuthModal(true)}
+        onSignOut={handleSignOut}
+        tabs={user ? visibleTabs : undefined}
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab as Tab)}
+      />
 
       <main className="pt-20">
         {user ? (
