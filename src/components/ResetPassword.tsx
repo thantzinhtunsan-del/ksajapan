@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -34,7 +34,7 @@ export default function ResetPassword() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     if (password.length < 6) {

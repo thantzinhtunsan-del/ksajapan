@@ -4,7 +4,7 @@
  * Pass system: overall ≥ 60% AND no subject with 0 correct.
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import PAST_QUESTIONS_JSON from '../data/pastQuestions.json';
 import { motion, AnimatePresence } from 'motion/react';
@@ -30,7 +30,7 @@ interface Question {
   explanation: string;
 }
 
-// ─── Question Bank (681 past exam questions from 第31回～第38回) ────────────────
+// ─── Question Bank (680 past exam questions from 第31回～第38回) ────────────────
 const ALL_QUESTIONS: Question[] = PAST_QUESTIONS_JSON as Question[];
 
 // ─── Available rounds ─────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ function calcPassFail(questions: Question[], answers: (number | null)[]) {
 function ModeCard({
   icon, title, subtitle, tag, onClick,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   subtitle: string;
   tag?: string;

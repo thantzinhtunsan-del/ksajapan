@@ -3,13 +3,15 @@
  * Admin dashboard for managing vocabulary, flashcards, and mock test questions.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   LayoutDashboard, BookOpen, GraduationCap, ClipboardCheck,
   Plus, Pencil, Trash2, Save, X, Search, ChevronDown, ChevronUp,
-  Users, FileQuestion, BookMarked, TrendingUp,
+  Users, FileQuestion, BookMarked, TrendingUp, FileText, Upload, CheckCircle2, AlertCircle, Crown, UserCheck,
 } from 'lucide-react';
+import { SUBJECTS } from '../lib/subjects';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,18 +40,22 @@ interface Question {
   explanation: string;
 }
 
-type AdminTab = 'dashboard' | 'vocabulary' | 'flashcards' | 'questions';
+type AdminTab = 'dashboard' | 'vocabulary' | 'flashcards' | 'questions' | 'pdfs' | 'users';
 
 const ADMIN_TABS: { id: AdminTab; label: string; icon: React.ElementType }[] = [
   { id: 'dashboard',  label: 'Dashboard',  icon: LayoutDashboard },
+  { id: 'users',      label: 'Users',       icon: Users },
   { id: 'vocabulary', label: 'Vocabulary',  icon: BookOpen },
   { id: 'flashcards', label: 'Flashcards', icon: GraduationCap },
   { id: 'questions',  label: 'Questions',   icon: ClipboardCheck },
+  { id: 'pdfs',       label: 'PDFs',        icon: FileText },
 ];
 
 const VOCAB_CATEGORIES = [
-  '基本理念', '社会保障', '介護保険', '高齢者・障害者', '生活保護',
-  'コミュニケーション', '介護技術', '医療知識', 'その他',
+  '人間の尊厳と自立', '人間関係とコミュニケーション', '社会の理解',
+  '介護の基本', 'コミュニケーション技術', '生活支援技術',
+  '介護過程', '発達と老化の理解', '認知症の理解',
+  '障害の理解', 'こころとからだのしくみ', '医療的ケア', '総合問題',
 ];
 
 const QUESTION_SUBJECTS = [
@@ -62,8 +68,8 @@ const QUESTION_SUBJECTS = [
 // ─── Initial sample data ──────────────────────────────────────────────────────
 
 const INITIAL_VOCAB: Vocabulary[] = [
-  { id: '1', word: '生存権', reading: 'せいぞんけん', burmese: 'အသက်ရှင်သန်ခွင့်', category: '基本理念' },
-  { id: '2', word: '基本的人権', reading: 'きほんてきじんけん', burmese: 'အခြေခံလူ့အခွင့်အရေး', category: '基本理念' },
+  { id: '1', word: '生存権', reading: 'せいぞんけん', burmese: 'အသက်ရှင်သန်ခွင့်', category: '人間の尊厳と自立' },
+  { id: '2', word: '基本的人権', reading: 'きほんてきじんけん', burmese: 'အခြေခံလူ့အခွင့်အရေး', category: '人間の尊厳と自立' },
   { id: '3', word: '社会保障', reading: 'しゃかいほしょう', burmese: 'လူမှုဖေးမမှု', category: '社会保障' },
 ];
 
@@ -88,11 +94,36 @@ const INITIAL_QUESTIONS: Question[] = [
 
 export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
+  const [loading, setLoading] = useState(true);
 
   // Data state
-  const [vocabList, setVocabList] = useState<Vocabulary[]>(INITIAL_VOCAB);
-  const [flashcardList, setFlashcardList] = useState<Flashcard[]>(INITIAL_FLASHCARDS);
-  const [questionList, setQuestionList] = useState<Question[]>(INITIAL_QUESTIONS);
+  const [vocabList, setVocabList] = useState<Vocabulary[]>([]);
+  const [flashcardList, setFlashcardList] = useState<Flashcard[]>([]);
+  const [questionList, setQuestionList] = useState<Question[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true);
+      const [{ data: vocab }, { data: cards }, { data: questions }] = await Promise.all([
+        supabase.from('vocabulary').select('*').order('created_at'),
+        supabase.from('flashcards').select('*').order('created_at'),
+        supabase.from('lessons').select('*').order('created_at'),
+      ]);
+      setVocabList(vocab ?? INITIAL_VOCAB);
+      setFlashcardList(cards ?? INITIAL_FLASHCARDS);
+      setQuestionList(questions?.map(q => ({ ...q, correctAnswer: q.correct_answer })) ?? INITIAL_QUESTIONS);
+      setLoading(false);
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8 flex items-center justify-center min-h-64">
+        <p className="text-gray-400 animate-pulse">Loading content...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -134,9 +165,11 @@ export default function AdminPanel() {
           transition={{ duration: 0.2 }}
         >
           {activeTab === 'dashboard'  && <Dashboard vocabCount={vocabList.length} flashcardCount={flashcardList.length} questionCount={questionList.length} />}
+          {activeTab === 'users'      && <UserManager />}
           {activeTab === 'vocabulary' && <VocabularyManager items={vocabList} setItems={setVocabList} />}
           {activeTab === 'flashcards' && <FlashcardManager items={flashcardList} setItems={setFlashcardList} />}
           {activeTab === 'questions'  && <QuestionManager items={questionList} setItems={setQuestionList} />}
+          {activeTab === 'pdfs'       && <PdfManager />}
         </motion.div>
       </AnimatePresence>
     </div>
@@ -202,24 +235,25 @@ function VocabularyManager({ items, setItems }: { items: Vocabulary[]; setItems:
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState<Omit<Vocabulary, 'id'>>({ word: '', reading: '', burmese: '', category: '基本理念' });
+  const [form, setForm] = useState<Omit<Vocabulary, 'id'>>({ word: '', reading: '', burmese: '', category: '人間の尊厳と自立' });
 
   const filtered = items.filter((v) =>
     v.word.includes(search) || v.reading.includes(search) || v.burmese.includes(search) || v.category.includes(search)
   );
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.word || !form.reading || !form.burmese) return;
-    const newItem: Vocabulary = { ...form, id: Date.now().toString() };
-    setItems([...items, newItem]);
-    setForm({ word: '', reading: '', burmese: '', category: '基本理念' });
+    const { data, error } = await supabase.from('vocabulary').insert(form).select().single();
+    if (!error && data) setItems([...items, data]);
+    setForm({ word: '', reading: '', burmese: '', category: '人間の尊厳と自立' });
     setShowForm(false);
   };
 
-  const handleUpdate = (id: string) => {
-    setItems(items.map((v) => (v.id === id ? { ...form, id } : v)));
+  const handleUpdate = async (id: string) => {
+    const { error } = await supabase.from('vocabulary').update(form).eq('id', id);
+    if (!error) setItems(items.map((v) => (v.id === id ? { ...form, id } : v)));
     setEditingId(null);
-    setForm({ word: '', reading: '', burmese: '', category: '基本理念' });
+    setForm({ word: '', reading: '', burmese: '', category: '人間の尊厳と自立' });
   };
 
   const handleEdit = (item: Vocabulary) => {
@@ -228,11 +262,12 @@ function VocabularyManager({ items, setItems }: { items: Vocabulary[]; setItems:
     setShowForm(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    await supabase.from('vocabulary').delete().eq('id', id);
     setItems(items.filter((v) => v.id !== id));
     if (editingId === id) {
       setEditingId(null);
-      setForm({ word: '', reading: '', burmese: '', category: '基本理念' });
+      setForm({ word: '', reading: '', burmese: '', category: '人間の尊厳と自立' });
     }
   };
 
@@ -277,7 +312,7 @@ function VocabularyManager({ items, setItems }: { items: Vocabulary[]; setItems:
                 <button onClick={() => editingId ? handleUpdate(editingId) : handleAdd()} className="gold-button flex items-center gap-2 text-sm !px-5 !py-2">
                   <Save size={14} /> {editingId ? 'Update' : 'Save'}
                 </button>
-                <button onClick={() => { setShowForm(false); setEditingId(null); setForm({ word: '', reading: '', burmese: '', category: '基本理念' }); }} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white px-5 py-2 rounded-full border border-white/10 hover:border-white/20 transition-all">
+                <button onClick={() => { setShowForm(false); setEditingId(null); setForm({ word: '', reading: '', burmese: '', category: '人間の尊厳と自立' }); }} className="flex items-center gap-2 text-sm text-gray-400 hover:text-white px-5 py-2 rounded-full border border-white/10 hover:border-white/20 transition-all">
                   <X size={14} /> Cancel
                 </button>
               </div>
@@ -338,15 +373,17 @@ function FlashcardManager({ items, setItems }: { items: Flashcard[]; setItems: R
     c.front.includes(search) || c.back.includes(search) || c.reading.includes(search)
   );
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.front || !form.back || !form.reading) return;
-    setItems([...items, { ...form, id: Date.now().toString() }]);
+    const { data, error } = await supabase.from('flashcards').insert(form).select().single();
+    if (!error && data) setItems([...items, data]);
     setForm({ front: '', back: '', reading: '' });
     setShowForm(false);
   };
 
-  const handleUpdate = (id: string) => {
-    setItems(items.map((c) => (c.id === id ? { ...form, id } : c)));
+  const handleUpdate = async (id: string) => {
+    const { error } = await supabase.from('flashcards').update(form).eq('id', id);
+    if (!error) setItems(items.map((c) => (c.id === id ? { ...form, id } : c)));
     setEditingId(null);
     setForm({ front: '', back: '', reading: '' });
   };
@@ -357,7 +394,8 @@ function FlashcardManager({ items, setItems }: { items: Flashcard[]; setItems: R
     setShowForm(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    await supabase.from('flashcards').delete().eq('id', id);
     setItems(items.filter((c) => c.id !== id));
     if (editingId === id) { setEditingId(null); setForm({ front: '', back: '', reading: '' }); }
   };
@@ -441,15 +479,18 @@ function QuestionManager({ items, setItems }: { items: Question[]; setItems: Rea
     q.question.includes(search) || q.subject.includes(search) || q.explanation.includes(search)
   );
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.question || form.options.some((o) => !o)) return;
-    setItems([...items, { ...form, id: Date.now().toString() }]);
+    const row = { ...form, id: Date.now().toString(), correct_answer: form.correctAnswer };
+    const { data, error } = await supabase.from('lessons').insert(row).select().single();
+    if (!error && data) setItems([...items, { ...data, correctAnswer: data.correct_answer }]);
     resetForm();
     setShowForm(false);
   };
 
-  const handleUpdate = (id: string) => {
-    setItems(items.map((q) => (q.id === id ? { ...form, id } : q)));
+  const handleUpdate = async (id: string) => {
+    const { error } = await supabase.from('lessons').update({ ...form, correct_answer: form.correctAnswer }).eq('id', id);
+    if (!error) setItems(items.map((q) => (q.id === id ? { ...form, id } : q)));
     setEditingId(null);
     resetForm();
   };
@@ -460,7 +501,8 @@ function QuestionManager({ items, setItems }: { items: Question[]; setItems: Rea
     setShowForm(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    await supabase.from('lessons').delete().eq('id', id);
     setItems(items.filter((q) => q.id !== id));
     if (editingId === id) { setEditingId(null); resetForm(); }
   };
@@ -609,6 +651,322 @@ function QuestionManager({ items, setItems }: { items: Question[]; setItems: Rea
         )}
       </div>
       <div className="mt-4 text-xs text-gray-500">{filtered.length} of {items.length} questions</div>
+    </div>
+  );
+}
+
+// ─── User Manager ─────────────────────────────────────────────────────────────
+
+interface UserProfile {
+  id: string;
+  email: string | null;
+  is_paid: boolean;
+  plan: string;
+  created_at: string;
+}
+
+function UserManager() {
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  useEffect(() => { loadUsers(); }, []);
+
+  async function loadUsers() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, email, is_paid, plan, created_at')
+      .order('created_at', { ascending: false });
+    setUsers(data ?? []);
+    setLoading(false);
+  }
+
+  async function togglePaid(user: UserProfile) {
+    setToggling(user.id);
+    const newPaid = !user.is_paid;
+    const { error } = await supabase
+      .from('profiles')
+      .update({ is_paid: newPaid, plan: newPaid ? 'paid' : 'free', paid_at: newPaid ? new Date().toISOString() : null })
+      .eq('id', user.id);
+    if (!error) {
+      setUsers(users.map(u => u.id === user.id ? { ...u, is_paid: newPaid, plan: newPaid ? 'paid' : 'free' } : u));
+    }
+    setToggling(null);
+  }
+
+  const paidCount = users.filter(u => u.is_paid).length;
+
+  return (
+    <div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <p className="text-3xl font-bold text-white">{users.length}</p>
+          <p className="text-sm text-gray-400 mt-1">Total Users</p>
+        </div>
+        <div className="bg-gradient-to-br from-metallic-gold/20 to-metallic-gold/5 border border-metallic-gold/30 rounded-2xl p-5">
+          <p className="text-3xl font-bold text-white">{paidCount}</p>
+          <p className="text-sm text-gray-400 mt-1">Paid Users</p>
+        </div>
+        <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
+          <p className="text-3xl font-bold text-white">{users.length - paidCount}</p>
+          <p className="text-sm text-gray-400 mt-1">Free Users</p>
+        </div>
+      </div>
+
+      {/* User list */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2">
+          <Users size={15} className="text-metallic-gold" />
+          <span className="text-sm font-semibold text-white">All Users</span>
+          <span className="text-xs text-gray-500 ml-auto">Toggle to grant / revoke paid access</span>
+        </div>
+
+        {loading ? (
+          <div className="px-5 py-10 text-center text-gray-500 text-sm animate-pulse">Loading...</div>
+        ) : users.length === 0 ? (
+          <div className="px-5 py-10 text-center text-gray-500 text-sm">No users yet.</div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {users.map((user) => (
+              <div key={user.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors">
+                <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center shrink-0">
+                  <UserCheck size={16} className="text-gray-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">
+                    {user.email ?? <span className="text-gray-500 italic">No email (old account)</span>}
+                  </p>
+                  <p className="text-xs text-gray-500">Joined {new Date(user.created_at).toLocaleDateString('ja-JP')}</p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {user.is_paid && (
+                    <span className="flex items-center gap-1 text-xs text-metallic-gold bg-metallic-gold/10 border border-metallic-gold/20 px-2.5 py-1 rounded-full">
+                      <Crown size={11} /> Paid
+                    </span>
+                  )}
+                  <button
+                    onClick={() => togglePaid(user)}
+                    disabled={toggling === user.id}
+                    className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none disabled:opacity-50 ${
+                      user.is_paid ? 'bg-metallic-gold' : 'bg-white/20'
+                    }`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                      user.is_paid ? 'translate-x-5' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-600 mt-3 text-center">
+        Toggle ON = paid access. Changes take effect immediately on next page load.
+      </p>
+    </div>
+  );
+}
+
+// ─── PDF Manager ──────────────────────────────────────────────────────────────
+
+interface SubjectPdf {
+  id: string;
+  subject: string;
+  file_url: string;
+  title: string;
+  created_at: string;
+}
+
+function PdfManager() {
+  const [pdfs, setPdfs] = useState<SubjectPdf[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSlug, setSelectedSlug] = useState(SUBJECTS[0].slug);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState<'idle' | 'uploading' | 'success' | 'error'>('idle');
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [errorMsg, setErrorMsg] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    loadPdfs();
+  }, []);
+
+  async function loadPdfs() {
+    setLoading(true);
+    const { data } = await supabase
+      .from('subject_pdfs')
+      .select('*')
+      .order('uploaded_at', { ascending: false });
+    setPdfs(data ?? []);
+    setLoading(false);
+  }
+
+  async function handleUpload() {
+    if (!file) return;
+    setUploadState('uploading');
+    setUploadProgress(0);
+    setErrorMsg('');
+
+    const ext = file.name.split('.').pop() ?? 'pdf';
+    const filePath = `${selectedSlug}/${Date.now()}.${ext}`;
+
+    // Upload to storage
+    const { error: storageError } = await supabase.storage
+      .from('subject-pdfs')
+      .upload(filePath, file, { upsert: false });
+
+    if (storageError) {
+      setUploadState('error');
+      setErrorMsg(storageError.message);
+      return;
+    }
+
+    setUploadProgress(70);
+
+    // Upsert metadata into subject_pdfs table
+    const { error: dbError } = await supabase
+      .from('subject_pdfs')
+      .upsert({ subject: selectedSlug, file_url: filePath, title: file.name }, { onConflict: 'subject' });
+
+    if (dbError) {
+      setUploadState('error');
+      setErrorMsg(dbError.message);
+      return;
+    }
+
+    setUploadProgress(100);
+    setUploadState('success');
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    await loadPdfs();
+
+    setTimeout(() => setUploadState('idle'), 3000);
+  }
+
+  async function handleDelete(pdf: SubjectPdf) {
+    // Remove from storage
+    await supabase.storage.from('subject-pdfs').remove([pdf.file_url]);
+    // Remove from table
+    await supabase.from('subject_pdfs').delete().eq('id', pdf.id);
+    setPdfs(pdfs.filter((p) => p.id !== pdf.id));
+  }
+
+  const subjectName = (subject: string) => SUBJECTS.find((s) => s.slug === subject)?.nameJa ?? subject;
+
+  return (
+    <div>
+      {/* Upload Form */}
+      <div className="bg-white/5 border border-metallic-gold/20 rounded-2xl p-6 mb-6">
+        <h3 className="text-sm font-semibold text-metallic-gold mb-4 flex items-center gap-2">
+          <Upload size={15} /> Upload Textbook PDF
+        </h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          {/* Subject picker */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Subject</label>
+            <select
+              value={selectedSlug}
+              onChange={(e) => setSelectedSlug(e.target.value)}
+              className="admin-input w-full"
+            >
+              {SUBJECTS.map((s) => (
+                <option key={s.slug} value={s.slug}>{s.nameJa}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* File picker */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">PDF File</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              className="block w-full text-sm text-gray-400 file:mr-3 file:py-1.5 file:px-4 file:rounded-full file:border file:border-white/10 file:text-xs file:font-semibold file:bg-white/5 file:text-gray-300 hover:file:bg-white/10 file:cursor-pointer cursor-pointer"
+            />
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        {uploadState === 'uploading' && (
+          <div className="mb-4">
+            <div className="w-full bg-white/10 rounded-full h-1.5">
+              <motion.div
+                className="bg-metallic-gold h-1.5 rounded-full"
+                initial={{ width: '0%' }}
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.4 }}
+              />
+            </div>
+            <p className="text-xs text-gray-500 mt-1">Uploading...</p>
+          </div>
+        )}
+
+        {/* Status messages */}
+        {uploadState === 'success' && (
+          <div className="flex items-center gap-2 text-green-400 text-sm mb-4">
+            <CheckCircle2 size={16} /> Uploaded successfully
+          </div>
+        )}
+        {uploadState === 'error' && (
+          <div className="flex items-center gap-2 text-red-400 text-sm mb-4">
+            <AlertCircle size={16} /> {errorMsg || 'Upload failed'}
+          </div>
+        )}
+
+        <button
+          onClick={handleUpload}
+          disabled={!file || uploadState === 'uploading'}
+          className="gold-button flex items-center gap-2 text-sm !px-5 !py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <Upload size={14} /> Upload PDF
+        </button>
+
+        <p className="text-xs text-gray-600 mt-3">
+          Uploading a PDF for a subject that already has one will replace it.
+        </p>
+      </div>
+
+      {/* Existing PDFs */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+        <div className="px-5 py-3 border-b border-white/10 flex items-center gap-2">
+          <FileText size={15} className="text-metallic-gold" />
+          <span className="text-sm font-semibold text-white">Uploaded PDFs</span>
+          <span className="text-xs text-gray-500 ml-auto">{pdfs.length} / 13 subjects</span>
+        </div>
+
+        {loading ? (
+          <div className="px-5 py-10 text-center text-gray-500 text-sm animate-pulse">Loading...</div>
+        ) : pdfs.length === 0 ? (
+          <div className="px-5 py-10 text-center text-gray-500 text-sm">No PDFs uploaded yet.</div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {pdfs.map((pdf) => (
+              <div key={pdf.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors">
+                <FileText size={18} className="text-metallic-gold shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-white truncate">{subjectName(pdf.subject)}</p>
+                  <p className="text-xs text-gray-500 truncate">{pdf.title}</p>
+                  <p className="text-xs text-gray-600">{new Date(pdf.created_at).toLocaleString('ja-JP')}</p>
+                </div>
+                <button
+                  onClick={() => handleDelete(pdf)}
+                  className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-all shrink-0"
+                  title="Delete PDF"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

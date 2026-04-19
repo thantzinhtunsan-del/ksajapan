@@ -22,7 +22,19 @@ export default defineConfig(() => {
         },
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            'vendor-motion': ['motion/react'],
+            'vendor-supabase': ['@supabase/supabase-js'],
+            'vendor-lucide': ['lucide-react'],
+          },
+        },
+      },
+    },
     // Serve index.html for all routes (SPA fallback)
-    appType: 'spa',
+    appType: 'spa' as const,
   };
 });

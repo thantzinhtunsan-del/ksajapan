@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, Volume2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface Card {
   id: string;
@@ -75,20 +76,27 @@ const FLASHCARDS_DATA: Card[] = [
 ];
 
 export default function Flashcards() {
+  const [cards, setCards] = useState<Card[]>(FLASHCARDS_DATA);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
 
+  useEffect(() => {
+    supabase.from('flashcards_content').select('*').order('created_at').then(({ data }) => {
+      if (data && data.length > 0) setCards(data);
+    });
+  }, []);
+
   const handleNext = () => {
     setDirection(1);
     setIsFlipped(false);
-    setCurrentIndex((prev) => (prev + 1) % FLASHCARDS_DATA.length);
+    setCurrentIndex((prev) => (prev + 1) % cards.length);
   };
 
   const handlePrev = () => {
     setDirection(-1);
     setIsFlipped(false);
-    setCurrentIndex((prev) => (prev - 1 + FLASHCARDS_DATA.length) % FLASHCARDS_DATA.length);
+    setCurrentIndex((prev) => (prev - 1 + cards.length) % cards.length);
   };
 
   const speak = (text: string) => {
@@ -100,7 +108,7 @@ export default function Flashcards() {
     }
   };
 
-  const currentCard = FLASHCARDS_DATA[currentIndex];
+  const currentCard = cards[currentIndex] ?? cards[0];
 
   return (
     <section id="flashcards" className="py-24 bg-matte-black/50 border-t border-metallic-gold/10">
@@ -169,7 +177,7 @@ export default function Flashcards() {
           </button>
           
           <div className="text-sm font-bold text-gray-500 tracking-widest">
-            <span className="text-metallic-gold">{currentIndex + 1}</span> / {FLASHCARDS_DATA.length}
+            <span className="text-metallic-gold">{currentIndex + 1}</span> / {cards.length}
           </div>
 
           <button

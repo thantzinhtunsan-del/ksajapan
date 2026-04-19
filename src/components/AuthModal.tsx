@@ -3,7 +3,7 @@
  * Drop this into: src/components/AuthModal.tsx
  */
 
-import { useState } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -31,12 +31,12 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
 
   const [form, setForm] = useState({ name: '', email: '', password: '' });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
     if (!form.email) {
@@ -60,7 +60,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }: AuthModalP
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
 
