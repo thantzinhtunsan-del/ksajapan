@@ -162,7 +162,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[9999] md:hidden flex flex-col p-8 bg-matte-black"
+            className="fixed inset-0 z-[9999] md:hidden flex flex-col p-8"
+            style={{ backgroundColor: '#1A1A1A', backdropFilter: 'blur(10px)' }}
           >
             <div className="flex justify-between items-center mb-10">
               <Link to="/" onClick={() => setIsOpen(false)}>
