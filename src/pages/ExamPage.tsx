@@ -94,14 +94,8 @@ function calcResults(questions: Question[], answers: (number | null)[]) {
   return { total, correct, pct, passedScore, subjectMap, groupResults, failedGroups, passed };
 }
 
-interface ExamPageProps {
-  userId?: string;
-  isLoggedIn: boolean;
-  onSignIn: () => void;
-}
-
-export default function ExamPage({ userId, isLoggedIn, onSignIn }: ExamPageProps) {
-  const { isPaid } = useProfile(userId);
+export default function ExamPage() {
+  const { isPaid } = useProfile();
   const [screen, setScreen] = useState<Screen>('select-kai');
   const [selectedKai, setSelectedKai] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<ExamPeriod>('both');

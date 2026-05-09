@@ -3,12 +3,6 @@ import { SUBJECTS } from '../lib/subjects';
 import { useLang } from '../context/LanguageContext';
 import { ArrowRight } from 'lucide-react';
 
-interface HomeProps {
-  onSignIn: () => void;
-  isLoggedIn: boolean;
-}
-
-// Assign a distinct accent color per subject index
 const CARD_ACCENTS = [
   '#F59E0B', '#EF4444', '#10B981', '#3B82F6',
   '#8B5CF6', '#EC4899', '#14B8A6', '#F97316',
@@ -16,16 +10,11 @@ const CARD_ACCENTS = [
   '#FB923C',
 ];
 
-export default function Home({ onSignIn, isLoggedIn }: HomeProps) {
+export default function Home() {
   const navigate = useNavigate();
   const { t } = useLang();
   const amSubjects = SUBJECTS.filter((s) => s.period === 'am');
   const pmSubjects = SUBJECTS.filter((s) => s.period === 'pm');
-
-  function handleSubjectClick(slug: string) {
-    if (!isLoggedIn) { onSignIn(); return; }
-    navigate(`/subjects/${slug}`);
-  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -42,47 +31,33 @@ export default function Home({ onSignIn, isLoggedIn }: HomeProps) {
           <h1 className="text-2xl font-bold text-white mb-1 leading-snug">
             {t.heroTitle}<span style={{ color: '#A5B4FC' }}>{t.heroHighlight}</span>
           </h1>
-          <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{t.heroSub}</p>
-          {!isLoggedIn && (
-            <button
-              onClick={onSignIn}
-              className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
-              style={{ background: '#4F46E5', color: '#fff' }}
-            >
-              {t.startFree} <ArrowRight size={14} />
-            </button>
-          )}
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{t.heroSub}</p>
         </div>
-        {/* decorative blobs */}
         <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-20"
           style={{ background: 'radial-gradient(circle, #818CF8, transparent)' }} />
         <div className="absolute right-16 bottom-0 w-24 h-24 rounded-full opacity-10"
           style={{ background: 'radial-gradient(circle, #C4B5FD, transparent)' }} />
       </div>
 
-      <SubjectGroup label={t.amLabel} subjects={amSubjects} onSubjectClick={handleSubjectClick} isLoggedIn={isLoggedIn} signInToStudy={t.signInToStudy} accentOffset={0} />
-      <SubjectGroup label={t.pmLabel} subjects={pmSubjects} onSubjectClick={handleSubjectClick} isLoggedIn={isLoggedIn} signInToStudy={t.signInToStudy} accentOffset={amSubjects.length} />
+      <SubjectGroup label={t.amLabel} subjects={amSubjects} onSubjectClick={(s) => navigate(`/subjects/${s}`)} accentOffset={0} />
+      <SubjectGroup label={t.pmLabel} subjects={pmSubjects} onSubjectClick={(s) => navigate(`/subjects/${s}`)} accentOffset={amSubjects.length} />
     </div>
   );
 }
 
 function SubjectGroup({
-  label, subjects, onSubjectClick, isLoggedIn, signInToStudy, accentOffset,
+  label, subjects, onSubjectClick, accentOffset,
 }: {
   label: string;
   subjects: typeof SUBJECTS;
   onSubjectClick: (slug: string) => void;
-  isLoggedIn: boolean;
-  signInToStudy: string;
   accentOffset: number;
 }) {
   return (
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-4">
-        <span
-          className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider"
-          style={{ background: '#EEF2FF', color: '#4F46E5' }}
-        >
+        <span className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+          style={{ background: '#EEF2FF', color: '#4F46E5' }}>
           {label}
         </span>
         <div className="h-px flex-1" style={{ background: '#E2E8F0' }} />
@@ -94,30 +69,24 @@ function SubjectGroup({
             <button
               key={subject.slug}
               onClick={() => onSubjectClick(subject.slug)}
-              className="text-left rounded-xl transition-all group"
-              style={{
-                background: '#fff',
-                border: '1.5px solid #E2E8F0',
-                padding: '14px 16px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-              }}
+              className="text-left rounded-xl transition-all"
+              style={{ background: '#fff', border: '1.5px solid #E2E8F0', padding: '14px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = accent;
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 16px ${accent}22`;
-                (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = accent;
+                el.style.boxShadow = `0 4px 16px ${accent}22`;
+                el.style.transform = 'translateY(-2px)';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0';
-                (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
-                (e.currentTarget as HTMLElement).style.transform = 'none';
+                const el = e.currentTarget as HTMLElement;
+                el.style.borderColor = '#E2E8F0';
+                el.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
+                el.style.transform = 'none';
               }}
             >
               <div className="flex items-center gap-3">
-                {/* Colored icon circle */}
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                  style={{ background: `${accent}18` }}
-                >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                  style={{ background: `${accent}18` }}>
                   {subject.icon}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -126,11 +95,8 @@ function SubjectGroup({
                 </div>
                 <ArrowRight size={14} style={{ color: accent, opacity: 0.7, flexShrink: 0 }} />
               </div>
-              {/* Accent bottom bar */}
-              <div
-                className="mt-3 h-0.5 rounded-full"
-                style={{ background: `linear-gradient(to right, ${accent}60, transparent)` }}
-              />
+              <div className="mt-3 h-0.5 rounded-full"
+                style={{ background: `linear-gradient(to right, ${accent}60, transparent)` }} />
             </button>
           );
         })}

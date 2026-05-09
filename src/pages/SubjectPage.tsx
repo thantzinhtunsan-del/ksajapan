@@ -12,17 +12,11 @@ import ExamHacksTab from '../components/tabs/ExamHacksTab';
 
 type TabId = 'questions' | 'textbook' | 'vocab' | 'hacks';
 
-interface SubjectPageProps {
-  userId?: string;
-  userEmail?: string;
-  onSignIn: () => void;
-}
-
-export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPageProps) {
+export default function SubjectPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabId>('questions');
-  const { isPaid } = useProfile(userId, userEmail);
+  const { isPaid } = useProfile();
   const { t } = useLang();
 
   const subject = slug ? getSubjectBySlug(slug) : undefined;
