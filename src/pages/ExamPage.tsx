@@ -18,7 +18,6 @@ interface Question {
   question: string;
   options: string[];
   correctAnswer: number;
-  explanation: string;
   questionNo?: number;
 }
 

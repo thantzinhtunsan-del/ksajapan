@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ChevronDown, CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { SUBJECT_NAME_TO_SLUG } from '../../lib/subjects';
 import { useLang } from '../../context/LanguageContext';
 
@@ -11,7 +11,6 @@ interface Question {
   question: string;
   options: string[];
   correctAnswer: number;
-  explanation: string;
 }
 
 interface PastQuestionsTabProps {
@@ -23,7 +22,6 @@ interface PastQuestionsTabProps {
 
 function QuestionCard({ q, index }: { q: Question; index: number }) {
   const [selected, setSelected] = useState<number | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
   const { t } = useLang();
 
   const answered = selected !== null;
@@ -68,30 +66,16 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
         ))}
       </div>
 
-      {/* Explanation */}
+      {/* Reset */}
       {answered && (
-        <div className="space-y-2 pt-1">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowExplanation(!showExplanation)}
-              className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
-            >
-              <ChevronDown size={12} className={`transition-transform ${showExplanation ? 'rotate-180' : ''}`} />
-              {showExplanation ? t.hideExplanation : t.showExplanation}
-            </button>
-            <button
-              onClick={() => { setSelected(null); setShowExplanation(false); }}
-              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700 ml-auto"
-            >
-              <RotateCcw size={11} />
-              もう一度
-            </button>
-          </div>
-          {showExplanation && (
-            <p className="text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded p-3 leading-relaxed">
-              {q.explanation || '解説はまだ準備中です。'}
-            </p>
-          )}
+        <div className="flex justify-end pt-1">
+          <button
+            onClick={() => setSelected(null)}
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700"
+          >
+            <RotateCcw size={11} />
+            もう一度
+          </button>
         </div>
       )}
     </div>
