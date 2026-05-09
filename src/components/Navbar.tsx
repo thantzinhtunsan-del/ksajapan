@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LogIn, LogOut, Home, HelpCircle, User, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, Home, User, ShieldCheck, GraduationCap } from 'lucide-react';
 import type { Lang } from '../lib/i18n';
 import { LANG_OPTIONS, T } from '../lib/i18n';
 
@@ -22,7 +22,6 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
   const links = [
     { to: '/', label: t.home, icon: Home },
     { to: '/exam', label: '国試模擬', icon: GraduationCap },
-    { to: '/help', label: t.help, icon: HelpCircle },
     { to: '/my-page', label: t.myPage, icon: User },
   ];
 
