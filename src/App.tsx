@@ -65,7 +65,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-navy selection:bg-violet/25">
+      <div className="min-h-screen bg-gray-50">
         <AppNavbar
           user={user ? { name: user.name, email: user.email } : null}
           onSignIn={() => setShowAuthModal(true)}
@@ -150,7 +150,7 @@ function AppNavbar(props: { user: { name: string; email: string } | null; onSign
 function AppFooter() {
   const { t } = useLang();
   return (
-    <footer className="py-10 border-t border-white/5 text-center text-ink-2 text-sm">
+    <footer className="py-8 border-t border-gray-200 text-center text-gray-400 text-sm">
       <p>{t.footer(new Date().getFullYear())}</p>
     </footer>
   );

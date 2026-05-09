@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, BookOpen, ClipboardList, BookMarked, Zap } from 'lucide-react';
 import { getSubjectBySlug } from '../lib/subjects';
 import { useProfile } from '../hooks/useProfile';
@@ -28,7 +27,7 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
 
   const subject = slug ? getSubjectBySlug(slug) : undefined;
 
-  const TABS: { id: TabId; label: string; icon: ComponentType<{ size?: number; className?: string }> }[] = [
+  const TABS: { id: TabId; label: string; icon: ComponentType<{ size?: number }> }[] = [
     { id: 'questions', label: t.tabQuestions, icon: ClipboardList },
     { id: 'textbook',  label: t.tabTextbook,  icon: BookOpen },
     { id: 'vocab',     label: t.tabVocab,     icon: BookMarked },
@@ -37,9 +36,9 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
 
   if (!subject) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 text-ink-2 gap-4">
-        <p className="text-lg">{t.subjectNotFound}</p>
-        <button onClick={() => navigate('/')} className="violet-btn text-sm">
+      <div className="max-w-5xl mx-auto px-4 py-16 text-center">
+        <p className="text-gray-500 mb-4">{t.subjectNotFound}</p>
+        <button onClick={() => navigate('/')} className="text-sm text-blue-600 hover:underline">
           {t.backHome}
         </button>
       </div>
@@ -47,50 +46,26 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Back */}
+    <div className="max-w-5xl mx-auto px-4 py-6">
       <button
         onClick={() => navigate('/')}
-        className="flex items-center gap-1.5 text-sm text-ink-2 hover:text-ink transition-colors mb-5"
+        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-5"
       >
-        <ChevronLeft size={16} />
+        <ChevronLeft size={15} />
         {t.backToList}
       </button>
 
       {/* Subject header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl p-5 mb-5 relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #0D1326, #141C35)',
-          border: '1px solid rgba(124,58,237,0.2)',
-        }}
-      >
-        {/* subtle glow */}
-        <div className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 rounded-full bg-violet/10 blur-2xl" />
-        <div className="relative z-10 flex items-start gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0 bg-gradient-to-br ${subject.color}`}>
-            {subject.icon}
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span
-                className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(124,58,237,0.15)', color: '#A78BFA' }}
-              >
-                {subject.period === 'am' ? t.am : t.pm}
-              </span>
-              <span className="text-xs text-ink-2">{subject.questionCount}問</span>
-            </div>
-            <h1 className="text-xl font-bold text-ink leading-tight">{subject.nameJa}</h1>
-            <p className="text-sm text-ink-2 mt-0.5">{subject.description}</p>
-          </div>
+      <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-200">
+        <span className="text-3xl">{subject.icon}</span>
+        <div>
+          <h1 className="text-lg font-bold text-gray-900">{subject.nameJa}</h1>
+          <p className="text-xs text-gray-400">{subject.period === 'am' ? t.am : t.pm} · {subject.questionCount}問</p>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-1 mb-5 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+      {/* Tabs */}
+      <div className="flex gap-1 border-b border-gray-200 mb-5 overflow-x-auto">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -98,14 +73,13 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors -mb-px ${
                 isActive
-                  ? 'text-white border-transparent'
-                  : 'text-ink-2 border-white/8 hover:text-ink hover:bg-white/4'
+                  ? 'border-blue-600 text-blue-600 font-medium'
+                  : 'border-transparent text-gray-500 hover:text-gray-900'
               }`}
-              style={isActive ? { background: '#7C3AED', boxShadow: '0 2px 12px rgba(124,58,237,0.35)' } : {}}
             >
-              <Icon size={14} />
+              <Icon size={13} />
               {tab.label}
             </button>
           );
@@ -113,33 +87,20 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
       </div>
 
       {/* Tab content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.18 }}
-        >
-          {activeTab === 'questions' && (
-            <PastQuestionsTab
-              subjectSlug={subject.slug}
-              subjectNameJa={subject.nameJa}
-              isPaid={isPaid}
-              onUpgrade={() => {}}
-            />
-          )}
-          {activeTab === 'textbook' && (
-            <TextbookTab subjectSlug={subject.slug} isPaid={isPaid} onUpgrade={() => {}} />
-          )}
-          {activeTab === 'vocab' && (
-            <VocabularyTab subjectSlug={subject.slug} isPaid={isPaid} onUpgrade={() => {}} />
-          )}
-          {activeTab === 'hacks' && (
-            <ExamHacksTab subjectSlug={subject.slug} isPaid={isPaid} onUpgrade={() => {}} />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <div>
+        {activeTab === 'questions' && (
+          <PastQuestionsTab subjectSlug={subject.slug} subjectNameJa={subject.nameJa} isPaid={isPaid} />
+        )}
+        {activeTab === 'textbook' && (
+          <TextbookTab subjectSlug={subject.slug} isPaid={isPaid} />
+        )}
+        {activeTab === 'vocab' && (
+          <VocabularyTab subjectSlug={subject.slug} isPaid={isPaid} />
+        )}
+        {activeTab === 'hacks' && (
+          <ExamHacksTab subjectSlug={subject.slug} isPaid={isPaid} />
+        )}
+      </div>
     </div>
   );
 }
