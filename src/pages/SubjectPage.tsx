@@ -30,7 +30,7 @@ export default function SubjectPage() {
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
         <p className="text-gray-500 mb-4">{t.subjectNotFound}</p>
-        <button onClick={() => navigate('/')} className="text-sm" style={{ color: '#4F46E5' }}>
+        <button onClick={() => navigate('/')} className="text-sm" style={{ color: '#0284C7' }}>
           {t.backHome}
         </button>
       </div>
@@ -51,12 +51,12 @@ export default function SubjectPage() {
       {/* Subject header */}
       <div
         className="rounded-2xl p-5 mb-5 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #0C4A6E 0%, #0369A1 100%)' }}
       >
         <div className="relative z-10 flex items-center gap-4">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
-            style={{ background: 'rgba(165,180,252,0.15)', backdropFilter: 'blur(4px)' }}
+            style={{ background: 'rgba(186,230,253,0.15)', backdropFilter: 'blur(4px)' }}
           >
             {subject.icon}
           </div>
@@ -64,7 +64,7 @@ export default function SubjectPage() {
             <div className="flex items-center gap-2 mb-1">
               <span
                 className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(165,180,252,0.2)', color: '#A5B4FC' }}
+                style={{ background: 'rgba(186,230,253,0.2)', color: '#7DD3FC' }}
               >
                 {subject.period === 'am' ? t.am : t.pm}
               </span>
@@ -80,7 +80,7 @@ export default function SubjectPage() {
         </div>
         {/* deco */}
         <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #818CF8, transparent)' }} />
+          style={{ background: 'radial-gradient(circle, #38BDF8, transparent)' }} />
       </div>
 
       {/* Tabs */}
@@ -97,7 +97,7 @@ export default function SubjectPage() {
               onClick={() => setActiveTab(tab.id)}
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm whitespace-nowrap font-medium transition-all flex-1 justify-center"
               style={isActive
-                ? { background: '#4F46E5', color: '#fff', boxShadow: '0 2px 8px rgba(79,70,229,0.35)' }
+                ? { background: '#0284C7', color: '#fff', boxShadow: '0 2px 8px rgba(79,70,229,0.35)' }
                 : { color: '#64748B' }
               }
             >

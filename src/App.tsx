@@ -11,7 +11,7 @@ const ADMIN_EMAILS = ['admin@ksajapan.com', 'admin@ksa.com', 'thantzinhtunsan@gm
 function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen" style={{ background: '#F0F9FF' }}>
         <AppNavbar />
 
         <main className="pt-20">
@@ -38,7 +38,7 @@ function AppNavbar() {
 function AppFooter() {
   const { t } = useLang();
   return (
-    <footer className="py-8 border-t border-gray-200 text-center text-gray-400 text-sm">
+    <footer className="py-8 text-center text-sm" style={{ borderTop: '1px solid #BAE6FD', color: '#7CB9D8' }}>
       <p>{t.footer(new Date().getFullYear())}</p>
     </footer>
   );

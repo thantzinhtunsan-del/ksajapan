@@ -43,7 +43,7 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
       <div className="flex items-center gap-2 text-xs">
         <span
           className="font-bold px-2 py-0.5 rounded-md"
-          style={{ background: '#EEF2FF', color: '#4F46E5' }}
+          style={{ background: '#E0F2FE', color: '#0284C7' }}
         >
           Q{index + 1}
         </span>
@@ -148,7 +148,7 @@ export default function PastQuestionsTab({ subjectSlug, subjectNameJa, isPaid, o
               onClick={() => setSelectedKai(kai)}
               className="text-xs px-3 py-1 rounded-lg border transition-all"
               style={selectedKai === kai
-                ? { background: '#4F46E5', color: '#fff', borderColor: '#4F46E5' }
+                ? { background: '#0284C7', color: '#fff', borderColor: '#0284C7' }
                 : { borderColor: '#E2E8F0', color: '#64748B', background: '#fff' }
               }
             >

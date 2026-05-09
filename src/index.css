@@ -2,16 +2,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand:       #4F46E5;
-  --color-brand-dark:  #3730A3;
-  --color-brand-light: #EEF2FF;
   --font-sans: "Inter", "Noto Sans JP", "Noto Sans Myanmar", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   html, body {
-    background: #F1F5F9;
-    color: #0F172A;
+    background: #F0F9FF;
+    color: #0C4A6E;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
@@ -20,8 +17,8 @@
   * { box-sizing: border-box; }
 
   ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: #F1F5F9; }
-  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: #E0F2FE; }
+  ::-webkit-scrollbar-thumb { background: #7DD3FC; border-radius: 4px; }
 }
 
 /* ── Option buttons ── */
@@ -30,28 +27,27 @@
   text-align: left;
   padding: 0.7rem 1rem;
   border-radius: 10px;
-  border: 1.5px solid #E2E8F0;
+  border: 1.5px solid #BAE6FD;
   background: #fff;
-  color: #334155;
+  color: #0C4A6E;
   font-size: 0.8125rem;
   line-height: 1.55;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color 0.15s, background 0.15s;
 }
 .option-btn:not(:disabled):hover {
-  border-color: #818CF8;
-  background: #EEF2FF;
-  color: #1E1B4B;
+  border-color: #0284C7;
+  background: #F0F9FF;
 }
 .option-btn.correct {
-  border-color: #10B981;
-  background: #ECFDF5;
-  color: #065F46;
+  border-color: #16A34A;
+  background: #F0FDF4;
+  color: #14532D;
 }
 .option-btn.wrong {
-  border-color: #F87171;
+  border-color: #DC2626;
   background: #FEF2F2;
-  color: #991B1B;
+  color: #7F1D1D;
 }
 .option-btn.faded {
   opacity: 0.35;
