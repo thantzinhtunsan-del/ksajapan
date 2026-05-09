@@ -38,7 +38,7 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
     return (
       <div className="max-w-5xl mx-auto px-4 py-16 text-center">
         <p className="text-gray-500 mb-4">{t.subjectNotFound}</p>
-        <button onClick={() => navigate('/')} className="text-sm text-blue-600 hover:underline">
+        <button onClick={() => navigate('/')} className="text-sm" style={{ color: '#4F46E5' }}>
           {t.backHome}
         </button>
       </div>
@@ -49,23 +49,53 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
     <div className="max-w-5xl mx-auto px-4 py-6">
       <button
         onClick={() => navigate('/')}
-        className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors mb-5"
+        className="flex items-center gap-1 text-sm mb-5 transition-colors"
+        style={{ color: '#64748B' }}
       >
         <ChevronLeft size={15} />
         {t.backToList}
       </button>
 
       {/* Subject header */}
-      <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-200">
-        <span className="text-3xl">{subject.icon}</span>
-        <div>
-          <h1 className="text-lg font-bold text-gray-900">{subject.nameJa}</h1>
-          <p className="text-xs text-gray-400">{subject.period === 'am' ? t.am : t.pm} · {subject.questionCount}問</p>
+      <div
+        className="rounded-2xl p-5 mb-5 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 100%)' }}
+      >
+        <div className="relative z-10 flex items-center gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl shrink-0"
+            style={{ background: 'rgba(165,180,252,0.15)', backdropFilter: 'blur(4px)' }}
+          >
+            {subject.icon}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="text-xs font-semibold px-2.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(165,180,252,0.2)', color: '#A5B4FC' }}
+              >
+                {subject.period === 'am' ? t.am : t.pm}
+              </span>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+                {subject.questionCount}問
+              </span>
+            </div>
+            <h1 className="text-xl font-bold text-white leading-tight">{subject.nameJa}</h1>
+            {subject.description && (
+              <p className="text-sm mt-0.5" style={{ color: 'rgba(255,255,255,0.55)' }}>{subject.description}</p>
+            )}
+          </div>
         </div>
+        {/* deco */}
+        <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, #818CF8, transparent)' }} />
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-gray-200 mb-5 overflow-x-auto">
+      <div
+        className="flex gap-1 mb-5 overflow-x-auto pb-1 rounded-xl p-1"
+        style={{ background: '#fff', border: '1px solid #E2E8F0', scrollbarWidth: 'none' }}
+      >
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -73,11 +103,11 @@ export default function SubjectPage({ userId, userEmail, onSignIn }: SubjectPage
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm whitespace-nowrap border-b-2 transition-colors -mb-px ${
-                isActive
-                  ? 'border-blue-600 text-blue-600 font-medium'
-                  : 'border-transparent text-gray-500 hover:text-gray-900'
-              }`}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm whitespace-nowrap font-medium transition-all flex-1 justify-center"
+              style={isActive
+                ? { background: '#4F46E5', color: '#fff', boxShadow: '0 2px 8px rgba(79,70,229,0.35)' }
+                : { color: '#64748B' }
+              }
             >
               <Icon size={13} />
               {tab.label}

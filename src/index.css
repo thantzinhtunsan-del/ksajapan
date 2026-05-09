@@ -1,15 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+Myanmar:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", "Noto Sans Myanmar", ui-sans-serif, system-ui, sans-serif;
+  --color-brand:       #4F46E5;
+  --color-brand-dark:  #3730A3;
+  --color-brand-light: #EEF2FF;
+  --font-sans: "Inter", "Noto Sans JP", "Noto Sans Myanmar", ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   html, body {
-    background: #f9fafb;
-    color: #111827;
+    background: #F1F5F9;
+    color: #0F172A;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
   }
+
+  * { box-sizing: border-box; }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #F1F5F9; }
+  ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 4px; }
+}
+
+/* ── Option buttons ── */
+.option-btn {
+  width: 100%;
+  text-align: left;
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #E2E8F0;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.option-btn:not(:disabled):hover {
+  border-color: #818CF8;
+  background: #EEF2FF;
+  color: #1E1B4B;
+}
+.option-btn.correct {
+  border-color: #10B981;
+  background: #ECFDF5;
+  color: #065F46;
+}
+.option-btn.wrong {
+  border-color: #F87171;
+  background: #FEF2F2;
+  color: #991B1B;
+}
+.option-btn.faded {
+  opacity: 0.35;
+  pointer-events: none;
 }

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { CheckCircle2, XCircle, RotateCcw } from 'lucide-react';
 import { SUBJECT_NAME_TO_SLUG } from '../../lib/subjects';
 import { useLang } from '../../context/LanguageContext';
@@ -27,30 +27,49 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
   const answered = selected !== null;
   const isCorrect = selected === q.correctAnswer;
 
-  function optStyle(i: number) {
-    if (!answered) return 'border-gray-200 text-gray-700 hover:border-blue-400 hover:bg-blue-50';
-    if (i === q.correctAnswer) return 'border-green-500 bg-green-50 text-green-800';
-    if (i === selected) return 'border-red-400 bg-red-50 text-red-700';
-    return 'border-gray-100 text-gray-400';
+  function optionStyle(i: number): React.CSSProperties {
+    if (!answered) return { borderColor: '#E2E8F0', background: '#fff', color: '#334155' };
+    if (i === q.correctAnswer) return { borderColor: '#10B981', background: '#ECFDF5', color: '#065F46' };
+    if (i === selected) return { borderColor: '#F87171', background: '#FEF2F2', color: '#991B1B' };
+    return { borderColor: '#F1F5F9', background: '#F8FAFC', color: '#94A3B8' };
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded p-4 space-y-3">
+    <div
+      className="rounded-xl p-4 space-y-3"
+      style={{ background: '#fff', border: '1.5px solid #E2E8F0', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-2 text-xs text-gray-400">
-        <span>Q{index + 1}</span>
-        <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-500">{q.kai}</span>
-        <span className="uppercase">{q.period === 'am' ? t.am : t.pm}</span>
+      <div className="flex items-center gap-2 text-xs">
+        <span
+          className="font-bold px-2 py-0.5 rounded-md"
+          style={{ background: '#EEF2FF', color: '#4F46E5' }}
+        >
+          Q{index + 1}
+        </span>
+        <span
+          className="px-2 py-0.5 rounded-md"
+          style={{ background: '#F1F5F9', color: '#64748B' }}
+        >
+          {q.kai}
+        </span>
+        <span style={{ color: '#94A3B8' }}>{q.period === 'am' ? t.am : t.pm}</span>
         {answered && (
-          <span className={`ml-auto flex items-center gap-1 font-semibold ${isCorrect ? 'text-green-600' : 'text-red-500'}`}>
-            {isCorrect ? <CheckCircle2 size={13} /> : <XCircle size={13} />}
+          <span
+            className="ml-auto flex items-center gap-1 font-semibold text-xs px-2 py-0.5 rounded-full"
+            style={isCorrect
+              ? { background: '#ECFDF5', color: '#059669' }
+              : { background: '#FEF2F2', color: '#DC2626' }
+            }
+          >
+            {isCorrect ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
             {isCorrect ? t.correct : t.incorrect}
           </span>
         )}
       </div>
 
       {/* Question */}
-      <p className="text-sm text-gray-900 leading-relaxed">{q.question}</p>
+      <p className="text-sm font-medium leading-relaxed" style={{ color: '#0F172A' }}>{q.question}</p>
 
       {/* Options */}
       <div className="space-y-1.5">
@@ -59,7 +78,8 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
             key={i}
             disabled={answered}
             onClick={() => setSelected(i)}
-            className={`w-full text-left text-xs px-3 py-2.5 rounded border transition-colors ${optStyle(i)}`}
+            className="w-full text-left text-xs px-3 py-2.5 rounded-lg border transition-all"
+            style={optionStyle(i)}
           >
             <span className="font-bold mr-2">{i + 1}.</span>{opt}
           </button>
@@ -71,7 +91,8 @@ function QuestionCard({ q, index }: { q: Question; index: number }) {
         <div className="flex justify-end pt-1">
           <button
             onClick={() => setSelected(null)}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-700"
+            className="flex items-center gap-1 text-xs transition-colors"
+            style={{ color: '#94A3B8' }}
           >
             <RotateCcw size={11} />
             もう一度
@@ -125,11 +146,11 @@ export default function PastQuestionsTab({ subjectSlug, subjectNameJa, isPaid, o
             <button
               key={kai}
               onClick={() => setSelectedKai(kai)}
-              className={`text-xs px-3 py-1 rounded border transition-colors ${
-                selectedKai === kai
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'border-gray-200 text-gray-600 hover:border-gray-400'
-              }`}
+              className="text-xs px-3 py-1 rounded-lg border transition-all"
+              style={selectedKai === kai
+                ? { background: '#4F46E5', color: '#fff', borderColor: '#4F46E5' }
+                : { borderColor: '#E2E8F0', color: '#64748B', background: '#fff' }
+              }
             >
               {kai === 'all' ? t.questionsAll : kai}
             </button>

@@ -1,11 +1,20 @@
 import { useNavigate } from 'react-router-dom';
 import { SUBJECTS } from '../lib/subjects';
 import { useLang } from '../context/LanguageContext';
+import { ArrowRight } from 'lucide-react';
 
 interface HomeProps {
   onSignIn: () => void;
   isLoggedIn: boolean;
 }
+
+// Assign a distinct accent color per subject index
+const CARD_ACCENTS = [
+  '#F59E0B', '#EF4444', '#10B981', '#3B82F6',
+  '#8B5CF6', '#EC4899', '#14B8A6', '#F97316',
+  '#6366F1', '#84CC16', '#06B6D4', '#E879F9',
+  '#FB923C',
+];
 
 export default function Home({ onSignIn, isLoggedIn }: HomeProps) {
   const navigate = useNavigate();
@@ -20,56 +29,111 @@ export default function Home({ onSignIn, isLoggedIn }: HomeProps) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">{t.heroTitle}{t.heroHighlight}</h1>
-        <p className="text-gray-500 text-sm">{t.heroSub}</p>
-        {!isLoggedIn && (
-          <button
-            onClick={onSignIn}
-            className="mt-4 text-sm font-medium bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            {t.startFree}
-          </button>
-        )}
+      {/* Hero banner */}
+      <div
+        className="rounded-2xl p-6 mb-8 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4C1D95 100%)' }}
+      >
+        <div className="relative z-10">
+          <div className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3"
+            style={{ background: 'rgba(165,180,252,0.2)', color: '#A5B4FC' }}>
+            介護福祉士国家試験 対策
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-1 leading-snug">
+            {t.heroTitle}<span style={{ color: '#A5B4FC' }}>{t.heroHighlight}</span>
+          </h1>
+          <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.6)' }}>{t.heroSub}</p>
+          {!isLoggedIn && (
+            <button
+              onClick={onSignIn}
+              className="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
+              style={{ background: '#4F46E5', color: '#fff' }}
+            >
+              {t.startFree} <ArrowRight size={14} />
+            </button>
+          )}
+        </div>
+        {/* decorative blobs */}
+        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #818CF8, transparent)' }} />
+        <div className="absolute right-16 bottom-0 w-24 h-24 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, #C4B5FD, transparent)' }} />
       </div>
 
-      <SubjectGroup label={t.amLabel} subjects={amSubjects} onSubjectClick={handleSubjectClick} isLoggedIn={isLoggedIn} signInToStudy={t.signInToStudy} />
-      <SubjectGroup label={t.pmLabel} subjects={pmSubjects} onSubjectClick={handleSubjectClick} isLoggedIn={isLoggedIn} signInToStudy={t.signInToStudy} />
+      <SubjectGroup label={t.amLabel} subjects={amSubjects} onSubjectClick={handleSubjectClick} isLoggedIn={isLoggedIn} signInToStudy={t.signInToStudy} accentOffset={0} />
+      <SubjectGroup label={t.pmLabel} subjects={pmSubjects} onSubjectClick={handleSubjectClick} isLoggedIn={isLoggedIn} signInToStudy={t.signInToStudy} accentOffset={amSubjects.length} />
     </div>
   );
 }
 
 function SubjectGroup({
-  label, subjects, onSubjectClick, isLoggedIn, signInToStudy,
+  label, subjects, onSubjectClick, isLoggedIn, signInToStudy, accentOffset,
 }: {
   label: string;
   subjects: typeof SUBJECTS;
   onSubjectClick: (slug: string) => void;
   isLoggedIn: boolean;
   signInToStudy: string;
+  accentOffset: number;
 }) {
   return (
     <div className="mb-8">
-      <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">{label}</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-        {subjects.map((subject) => (
-          <button
-            key={subject.slug}
-            onClick={() => onSubjectClick(subject.slug)}
-            className="text-left px-4 py-3 bg-white border border-gray-200 rounded hover:border-blue-400 hover:bg-blue-50 transition-colors group"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-xl">{subject.icon}</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{subject.nameJa}</p>
-                <p className="text-xs text-gray-400">{subject.questionCount}問</p>
+      <div className="flex items-center gap-2 mb-4">
+        <span
+          className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+          style={{ background: '#EEF2FF', color: '#4F46E5' }}
+        >
+          {label}
+        </span>
+        <div className="h-px flex-1" style={{ background: '#E2E8F0' }} />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {subjects.map((subject, i) => {
+          const accent = CARD_ACCENTS[(accentOffset + i) % CARD_ACCENTS.length];
+          return (
+            <button
+              key={subject.slug}
+              onClick={() => onSubjectClick(subject.slug)}
+              className="text-left rounded-xl transition-all group"
+              style={{
+                background: '#fff',
+                border: '1.5px solid #E2E8F0',
+                padding: '14px 16px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = accent;
+                (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 16px ${accent}22`;
+                (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0';
+                (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)';
+                (e.currentTarget as HTMLElement).style.transform = 'none';
+              }}
+            >
+              <div className="flex items-center gap-3">
+                {/* Colored icon circle */}
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
+                  style={{ background: `${accent}18` }}
+                >
+                  {subject.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate leading-tight">{subject.nameJa}</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#94A3B8' }}>{subject.questionCount}問</p>
+                </div>
+                <ArrowRight size={14} style={{ color: accent, opacity: 0.7, flexShrink: 0 }} />
               </div>
-              {!isLoggedIn && (
-                <span className="text-xs text-blue-500 shrink-0">{signInToStudy}</span>
-              )}
-            </div>
-          </button>
-        ))}
+              {/* Accent bottom bar */}
+              <div
+                className="mt-3 h-0.5 rounded-full"
+                style={{ background: `linear-gradient(to right, ${accent}60, transparent)` }}
+              />
+            </button>
+          );
+        })}
       </div>
     </div>
   );

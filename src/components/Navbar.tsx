@@ -21,19 +21,20 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
 
   const links = [
     { to: '/', label: t.home, icon: Home },
-    { to: '/exam', label: '国試模擬', icon: GraduationCap },
+    { to: '/exam', label: '模擬試験', icon: GraduationCap },
     { to: '/my-page', label: t.myPage, icon: User },
   ];
 
   const currentLang = LANG_OPTIONS.find((o) => o.lang === lang)!;
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-white border-b border-gray-200">
+    <nav className="fixed top-0 w-full z-50" style={{ background: '#1E1B4B', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
       <div className="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
 
         {/* Logo */}
-        <Link to="/" className="font-bold text-gray-900 text-lg tracking-tight">
-          KSA
+        <Link to="/" className="font-bold text-white text-lg tracking-tight flex items-center gap-2">
+          <span style={{ background: '#4F46E5', padding: '3px 10px', borderRadius: 8, fontSize: 14 }}>KSA</span>
+          <span className="text-white/70 text-sm font-normal hidden sm:block">介護福祉士</span>
         </Link>
 
         {/* Desktop links */}
@@ -42,11 +43,12 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
             <Link
               key={to}
               to={to}
-              className={`px-3 py-1.5 rounded text-sm transition-colors ${
-                location.pathname === to
-                  ? 'text-blue-600 font-medium'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className="px-3 py-1.5 rounded-md text-sm transition-colors"
+              style={{
+                color: location.pathname === to ? '#fff' : 'rgba(255,255,255,0.6)',
+                background: location.pathname === to ? 'rgba(255,255,255,0.12)' : 'transparent',
+                fontWeight: location.pathname === to ? 600 : 400,
+              }}
             >
               {label}
             </Link>
@@ -54,9 +56,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
           {isAdmin && (
             <Link
               to="/admin"
-              className={`flex items-center gap-1 px-3 py-1.5 rounded text-sm transition-colors ${
-                location.pathname === '/admin' ? 'text-blue-600 font-medium' : 'text-gray-600 hover:text-gray-900'
-              }`}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md text-sm transition-colors"
+              style={{ color: 'rgba(255,255,255,0.6)' }}
             >
               <ShieldCheck size={13} />
               Admin
@@ -70,19 +71,20 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
           <div className="relative">
             <button
               onClick={() => setShowLang(!showLang)}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 px-2 py-1.5 rounded border border-gray-200 hover:border-gray-300 transition-colors"
+              className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md transition-colors"
+              style={{ color: 'rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}
             >
               {currentLang.flag} {currentLang.label}
             </button>
             {showLang && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded shadow-sm z-50">
+              <div className="absolute right-0 top-full mt-1 w-36 rounded-lg shadow-xl z-50 overflow-hidden"
+                style={{ background: '#1E1B4B', border: '1px solid rgba(255,255,255,0.12)' }}>
                 {LANG_OPTIONS.map((opt) => (
                   <button
                     key={opt.lang}
                     onClick={() => { setLang(opt.lang); setShowLang(false); }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors ${
-                      lang === opt.lang ? 'text-blue-600 font-medium' : 'text-gray-700 hover:bg-gray-50'
-                    }`}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors"
+                    style={{ color: lang === opt.lang ? '#A5B4FC' : 'rgba(255,255,255,0.65)' }}
                   >
                     {opt.flag} {opt.label}
                   </button>
@@ -93,10 +95,11 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
 
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-700 truncate max-w-[120px]">{user.name}</span>
+              <span className="text-sm text-white/70 truncate max-w-[120px]">{user.name}</span>
               <button
                 onClick={onSignOut}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                className="flex items-center gap-1 text-xs transition-colors"
+                style={{ color: 'rgba(255,255,255,0.5)' }}
               >
                 <LogOut size={13} />
                 {t.signOut}
@@ -105,7 +108,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
           ) : (
             <button
               onClick={onSignIn}
-              className="flex items-center gap-1.5 text-sm font-medium bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-1.5 rounded-lg transition-all"
+              style={{ background: '#4F46E5', color: '#fff' }}
             >
               <LogIn size={13} />
               {t.signIn}
@@ -116,7 +120,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
         {/* Mobile toggle */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden text-gray-600 hover:text-gray-900"
+          className="md:hidden"
+          style={{ color: 'rgba(255,255,255,0.7)' }}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -124,42 +129,44 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200 px-4 py-4 space-y-1">
+        <div className="md:hidden px-4 py-4 space-y-1" style={{ background: '#1E1B4B', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
           {links.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
               to={to}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded text-sm transition-colors ${
-                location.pathname === to ? 'text-blue-600 font-medium bg-blue-50' : 'text-gray-700 hover:bg-gray-50'
-              }`}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors"
+              style={{
+                color: location.pathname === to ? '#fff' : 'rgba(255,255,255,0.6)',
+                background: location.pathname === to ? 'rgba(255,255,255,0.1)' : 'transparent',
+              }}
             >
               <Icon size={15} />
               {label}
             </Link>
           ))}
           {isAdmin && (
-            <Link
-              to="/admin"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2.5 px-3 py-2 rounded text-sm text-gray-700 hover:bg-gray-50"
-            >
-              <ShieldCheck size={15} />
-              Admin
+            <Link to="/admin" onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm"
+              style={{ color: 'rgba(255,255,255,0.6)' }}>
+              <ShieldCheck size={15} />Admin
             </Link>
           )}
 
           {/* Language */}
-          <div className="pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400 mb-2 px-1">Language</p>
+          <div className="pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+            <p className="text-xs px-1 mb-2" style={{ color: 'rgba(255,255,255,0.3)' }}>Language</p>
             <div className="grid grid-cols-3 gap-1.5">
               {LANG_OPTIONS.map((opt) => (
                 <button
                   key={opt.lang}
                   onClick={() => setLang(opt.lang)}
-                  className={`text-xs px-2 py-1.5 rounded border transition-colors ${
-                    lang === opt.lang ? 'border-blue-300 text-blue-600 bg-blue-50' : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                  }`}
+                  className="text-xs px-2 py-1.5 rounded-md border transition-colors"
+                  style={{
+                    borderColor: lang === opt.lang ? '#818CF8' : 'rgba(255,255,255,0.1)',
+                    color: lang === opt.lang ? '#A5B4FC' : 'rgba(255,255,255,0.5)',
+                    background: lang === opt.lang ? 'rgba(79,70,229,0.2)' : 'transparent',
+                  }}
                 >
                   {opt.flag} {opt.label}
                 </button>
@@ -167,25 +174,23 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
             </div>
           </div>
 
-          <div className="pt-3 border-t border-gray-100">
+          <div className="pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             {user ? (
               <div className="flex items-center justify-between px-1">
-                <span className="text-sm text-gray-700">{user.name}</span>
-                <button
-                  onClick={() => { onSignOut(); setMobileOpen(false); }}
-                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
-                >
-                  <LogOut size={14} />
-                  {t.signOut}
+                <span className="text-sm" style={{ color: 'rgba(255,255,255,0.7)' }}>{user.name}</span>
+                <button onClick={() => { onSignOut(); setMobileOpen(false); }}
+                  className="flex items-center gap-1 text-sm"
+                  style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  <LogOut size={14} />{t.signOut}
                 </button>
               </div>
             ) : (
               <button
                 onClick={() => { onSignIn(); setMobileOpen(false); }}
-                className="w-full flex items-center justify-center gap-1.5 text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg"
+                style={{ background: '#4F46E5', color: '#fff' }}
               >
-                <LogIn size={14} />
-                {t.signInRegister}
+                <LogIn size={14} />{t.signInRegister}
               </button>
             )}
           </div>
