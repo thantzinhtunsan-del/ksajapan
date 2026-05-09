@@ -3,6 +3,7 @@ import { SUBJECTS } from '../lib/subjects';
 import { useLang } from '../context/LanguageContext';
 import { ArrowRight } from 'lucide-react';
 
+
 const CARD_ACCENTS = [
   '#F59E0B', '#EF4444', '#10B981', '#3B82F6',
   '#8B5CF6', '#EC4899', '#14B8A6', '#F97316',
@@ -18,27 +19,6 @@ export default function Home() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Hero banner */}
-      <div
-        className="rounded-2xl p-6 mb-8 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 60%, #4C1D95 100%)' }}
-      >
-        <div className="relative z-10">
-          <div className="inline-block text-xs font-semibold px-3 py-1 rounded-full mb-3"
-            style={{ background: 'rgba(165,180,252,0.2)', color: '#A5B4FC' }}>
-            介護福祉士国家試験 対策
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-1 leading-snug">
-            {t.heroTitle}<span style={{ color: '#A5B4FC' }}>{t.heroHighlight}</span>
-          </h1>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.6)' }}>{t.heroSub}</p>
-        </div>
-        <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, #818CF8, transparent)' }} />
-        <div className="absolute right-16 bottom-0 w-24 h-24 rounded-full opacity-10"
-          style={{ background: 'radial-gradient(circle, #C4B5FD, transparent)' }} />
-      </div>
-
       <SubjectGroup label={t.amLabel} subjects={amSubjects} onSubjectClick={(s) => navigate(`/subjects/${s}`)} accentOffset={0} />
       <SubjectGroup label={t.pmLabel} subjects={pmSubjects} onSubjectClick={(s) => navigate(`/subjects/${s}`)} accentOffset={amSubjects.length} />
     </div>
