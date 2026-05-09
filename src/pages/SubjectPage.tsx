@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import type { ComponentType } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, BookOpen, ClipboardList, BookMarked, Zap } from 'lucide-react';
+import { ChevronLeft, BookOpen, ClipboardList, Zap } from 'lucide-react';
 import { getSubjectBySlug } from '../lib/subjects';
 import { useProfile } from '../hooks/useProfile';
 import { useLang } from '../context/LanguageContext';
 import TextbookTab from '../components/tabs/TextbookTab';
 import PastQuestionsTab from '../components/tabs/PastQuestionsTab';
-import VocabularyTab from '../components/tabs/VocabularyTab';
 import ExamHacksTab from '../components/tabs/ExamHacksTab';
 
-type TabId = 'questions' | 'textbook' | 'vocab' | 'hacks';
+type TabId = 'questions' | 'textbook' | 'hacks';
 
 export default function SubjectPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -24,7 +23,6 @@ export default function SubjectPage() {
   const TABS: { id: TabId; label: string; icon: ComponentType<{ size?: number }> }[] = [
     { id: 'questions', label: t.tabQuestions, icon: ClipboardList },
     { id: 'textbook',  label: t.tabTextbook,  icon: BookOpen },
-    { id: 'vocab',     label: t.tabVocab,     icon: BookMarked },
     { id: 'hacks',     label: t.tabExamHacks, icon: Zap },
   ];
 
@@ -118,10 +116,7 @@ export default function SubjectPage() {
         {activeTab === 'textbook' && (
           <TextbookTab subjectSlug={subject.slug} isPaid={isPaid} />
         )}
-        {activeTab === 'vocab' && (
-          <VocabularyTab subjectSlug={subject.slug} isPaid={isPaid} />
-        )}
-        {activeTab === 'hacks' && (
+{activeTab === 'hacks' && (
           <ExamHacksTab subjectSlug={subject.slug} isPaid={isPaid} />
         )}
       </div>
