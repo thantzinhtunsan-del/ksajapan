@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, LogIn, LogOut, Home, HelpCircle, User, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Menu, X, LogIn, LogOut, Home, HelpCircle, User, ShieldCheck, GraduationCap, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import type { Lang } from '../lib/i18n';
@@ -30,23 +30,27 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
   const currentLang = LANG_OPTIONS.find((o) => o.lang === lang)!;
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-matte-black/80 backdrop-blur-md border-b border-metallic-gold/20">
+    <nav className="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-white/6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
           <Link to="/">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
-              className="text-2xl font-bold tracking-tighter"
+              className="flex items-center gap-2"
             >
-              <span className="text-white">KSA</span>
-              <span className="text-metallic-gold">.</span>
+              <div className="w-8 h-8 rounded-lg bg-violet flex items-center justify-center shadow-lg shadow-violet/30">
+                <BookOpen size={15} className="text-white" />
+              </div>
+              <span className="text-lg font-bold text-ink tracking-tight">
+                KSA<span className="text-violet">.</span>
+              </span>
             </motion.div>
           </Link>
 
-          {/* Desktop nav links */}
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1">
             {NAV_LINKS.map(({ to, label }) => {
               const isActive = location.pathname === to;
@@ -56,8 +60,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                   to={to}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                     isActive
-                      ? 'text-metallic-gold bg-metallic-gold/10'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      ? 'text-violet bg-violet/12 shadow-sm'
+                      : 'text-ink-2 hover:text-ink hover:bg-white/5'
                   }`}
                 >
                   {label}
@@ -69,8 +73,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                 to="/admin"
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   location.pathname === '/admin'
-                    ? 'text-metallic-gold bg-metallic-gold/10'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5'
+                    ? 'text-violet bg-violet/12'
+                    : 'text-ink-2 hover:text-ink hover:bg-white/5'
                 }`}
               >
                 <ShieldCheck size={14} />
@@ -79,13 +83,13 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
             )}
           </div>
 
-          {/* Desktop right side: language switcher + auth */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Language switcher */}
+          {/* Desktop right */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Language */}
             <div className="relative">
               <button
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20 transition-all"
+                className="flex items-center gap-1.5 text-xs text-ink-2 hover:text-ink px-3 py-1.5 rounded-full border border-white/8 hover:border-white/16 transition-all"
               >
                 <span>{currentLang.flag}</span>
                 <span>{currentLang.label}</span>
@@ -97,7 +101,7 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 6, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-40 bg-matte-black border border-white/10 rounded-xl shadow-xl overflow-hidden z-50"
+                    className="absolute right-0 top-full mt-2 w-40 bg-surface-2 border border-white/8 rounded-xl shadow-xl overflow-hidden z-50"
                   >
                     {LANG_OPTIONS.map((opt) => (
                       <button
@@ -105,8 +109,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                         onClick={() => { setLang(opt.lang); setShowLangMenu(false); }}
                         className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm transition-colors ${
                           lang === opt.lang
-                            ? 'bg-metallic-gold/15 text-metallic-gold'
-                            : 'text-gray-300 hover:bg-white/5'
+                            ? 'bg-violet/15 text-violet'
+                            : 'text-ink-2 hover:bg-white/5 hover:text-ink'
                         }`}
                       >
                         <span>{opt.flag}</span>
@@ -120,12 +124,12 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
 
             {user ? (
               <>
-                <span className="text-sm text-metallic-gold font-medium truncate max-w-[120px]">
+                <span className="text-sm text-ink font-medium truncate max-w-[120px]">
                   {user.name}
                 </span>
                 <button
                   onClick={onSignOut}
-                  className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white px-3 py-1.5 rounded-full border border-white/10 hover:border-white/20 transition-all"
+                  className="flex items-center gap-1.5 text-xs text-ink-2 hover:text-rose px-3 py-1.5 rounded-full border border-white/8 hover:border-rose/30 transition-all"
                 >
                   <LogOut size={13} />
                   {t.signOut}
@@ -134,23 +138,21 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
             ) : (
               <button
                 onClick={onSignIn}
-                className="flex items-center gap-2 text-sm font-semibold text-matte-black bg-metallic-gold px-5 py-2 rounded-full hover:bg-gold-muted transition-all hover:scale-105 active:scale-95"
+                className="violet-btn text-sm"
               >
-                <LogIn size={15} />
+                <LogIn size={14} />
                 {t.signIn}
               </button>
             )}
           </div>
 
           {/* Mobile hamburger */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-400 hover:text-white focus:outline-none"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden text-ink-2 hover:text-ink focus:outline-none"
+          >
+            {isOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
       </div>
 
@@ -161,26 +163,22 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
             initial={{ opacity: 0, x: '100%' }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[9999] md:hidden flex flex-col p-8 bg-matte-black"
+            transition={{ type: 'spring', damping: 26, stiffness: 220 }}
+            className="fixed inset-0 z-[9999] md:hidden flex flex-col p-7 bg-navy"
           >
-            <div className="flex justify-between items-center mb-10">
-              <Link to="/" onClick={() => setIsOpen(false)}>
-                <div className="text-2xl font-bold tracking-tighter">
-                  <span className="text-white">KSA</span>
-                  <span className="text-metallic-gold">.</span>
+            <div className="flex justify-between items-center mb-8">
+              <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-violet flex items-center justify-center">
+                  <BookOpen size={15} className="text-white" />
                 </div>
+                <span className="text-lg font-bold text-ink tracking-tight">KSA<span className="text-violet">.</span></span>
               </Link>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 rounded-full bg-white/5 text-gray-400 hover:text-white transition-colors"
-              >
-                <X size={28} />
+              <button onClick={() => setIsOpen(false)} className="p-2 rounded-full bg-white/5 text-ink-2 hover:text-ink">
+                <X size={22} />
               </button>
             </div>
 
-            {/* Mobile nav links */}
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col gap-1">
               {NAV_LINKS.map(({ to, label, icon: Icon }) => {
                 const isActive = location.pathname === to;
                 return (
@@ -190,8 +188,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                     onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all ${
                       isActive
-                        ? 'text-metallic-gold bg-metallic-gold/10'
-                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                        ? 'text-violet bg-violet/12'
+                        : 'text-ink-2 hover:text-ink hover:bg-white/5'
                     }`}
                   >
                     <Icon size={18} />
@@ -204,9 +202,7 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                   to="/admin"
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-all ${
-                    location.pathname === '/admin'
-                      ? 'text-metallic-gold bg-metallic-gold/10'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    location.pathname === '/admin' ? 'text-violet bg-violet/12' : 'text-ink-2 hover:text-ink hover:bg-white/5'
                   }`}
                 >
                   <ShieldCheck size={18} />
@@ -215,9 +211,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
               )}
             </nav>
 
-            {/* Mobile language switcher */}
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <p className="text-xs text-gray-500 uppercase tracking-wider mb-3 px-1">Language / 言語</p>
+            <div className="mt-6 pt-6 border-t border-white/8">
+              <p className="text-xs text-ink-2 uppercase tracking-wider mb-3 px-1">Language / 言語</p>
               <div className="grid grid-cols-2 gap-2">
                 {LANG_OPTIONS.map((opt) => (
                   <button
@@ -225,8 +220,8 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
                     onClick={() => setLang(opt.lang)}
                     className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm border transition-all ${
                       lang === opt.lang
-                        ? 'bg-metallic-gold/15 text-metallic-gold border-metallic-gold/30'
-                        : 'text-gray-400 border-white/10 hover:bg-white/5'
+                        ? 'bg-violet/15 text-violet border-violet/30'
+                        : 'text-ink-2 border-white/8 hover:bg-white/5 hover:text-ink'
                     }`}
                   >
                     <span>{opt.flag}</span>
@@ -236,13 +231,13 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
               </div>
             </div>
 
-            <div className="mt-auto pt-8 border-t border-white/10">
+            <div className="mt-auto pt-6 border-t border-white/8">
               {user ? (
                 <div className="flex items-center justify-between">
-                  <p className="text-metallic-gold font-bold truncate max-w-[180px]">{user.name}</p>
+                  <p className="text-ink font-semibold truncate max-w-[180px]">{user.name}</p>
                   <button
                     onClick={() => { onSignOut(); setIsOpen(false); }}
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+                    className="flex items-center gap-2 text-sm text-ink-2 hover:text-rose transition-colors"
                   >
                     <LogOut size={16} />
                     {t.signOut}
@@ -251,9 +246,9 @@ export default function Navbar({ user, onSignIn, onSignOut, lang, setLang, isAdm
               ) : (
                 <button
                   onClick={() => { onSignIn(); setIsOpen(false); }}
-                  className="w-full gold-button flex items-center justify-center gap-2"
+                  className="w-full violet-btn justify-center text-sm"
                 >
-                  <LogIn size={18} />
+                  <LogIn size={16} />
                   {t.signInRegister}
                 </button>
               )}

@@ -57,7 +57,7 @@ export function useProfile(userId: string | undefined, userEmail?: string) {
     return () => { cancelled = true; };
   }, [userId]);
 
-  const isPaid = profile?.is_paid ?? false;
+  const isPaid = true; // All content is free
 
   return { profile, isPaid, loading };
 }
