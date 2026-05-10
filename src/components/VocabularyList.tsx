@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Volume2, Search, BookOpen } from 'lucide-react';
+import { Volume2, Search, BookOpen, Download } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
@@ -579,15 +579,25 @@ export default function VocabularyList() {
               ))}
             </div>
 
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-              <input
-                type="text"
-                placeholder="Search words..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white/5 border border-metallic-gold/20 rounded-full py-3 pl-12 pr-6 text-white focus:outline-none focus:border-metallic-gold transition-all"
-              />
+            <div className="flex gap-3 w-full md:w-auto items-center">
+              <div className="relative flex-1 md:w-80">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
+                <input
+                  type="text"
+                  placeholder="Search words..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full bg-white/5 border border-metallic-gold/20 rounded-full py-3 pl-12 pr-6 text-white focus:outline-none focus:border-metallic-gold transition-all"
+                />
+              </div>
+              <a
+                href="/Vocabulary_List_C_Final.pdf"
+                download="Vocabulary_List_C_Final.pdf"
+                className="flex items-center gap-2 px-5 py-3 rounded-full bg-metallic-gold text-matte-black font-bold text-sm hover:brightness-110 transition-all gold-glow-hover shrink-0"
+              >
+                <Download size={16} />
+                Download PDF
+              </a>
             </div>
           </div>
         </div>
